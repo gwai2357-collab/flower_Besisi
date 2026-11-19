@@ -6,11 +6,11 @@ import { GIFTS } from '../data/gifts.js';
 import { state, update } from '../state.js';
 
 export function giftSection(onDone){
-  const g = state.gift, list = el('div', { class: 'chips' });
+  const g = state.gift, list = el('div', { class: 'chips' });   // state.gift.kind는 선물 템플릿 id
   const mysteryIn = el('input', { class: 'field', maxlength: 14, placeholder: t('send.gift.mysteryPh'), value: g.mystery, oninput: e => update(s => { s.gift.mystery = e.target.value; }) });
-  const mysteryRow = el('div', { class: 'kv', hidden: !GIFTS.find(x => x.name === g.kind)?.mystery }, el('span', {}, t('send.gift.mysteryName')), mysteryIn);
+  const mysteryRow = el('div', { class: 'kv', hidden: !GIFTS.find(x => x.id === g.kind)?.mystery }, el('span', {}, t('send.gift.mysteryName')), mysteryIn);
   const draw = () => {
-    list.replaceChildren(...GIFTS.map(x => chip(x.name, { cls: state.gift.kind === x.name ? 'today' : '', onclick: () => { update(s => { s.gift.kind = x.name; }); mysteryRow.hidden = !x.mystery; draw(); } })));
+    list.replaceChildren(...GIFTS.map(x => chip(x.name, { cls: state.gift.kind === x.id ? 'today' : '', onclick: () => { update(s => { s.gift.kind = x.id; }); mysteryRow.hidden = !x.mystery; draw(); } })));
   };
   draw();
   const code = el('input', { class: 'field', placeholder: t('send.gift.codePh'), value: g.code, oninput: e => update(s => { s.gift.code = e.target.value; }) });

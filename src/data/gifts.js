@@ -1,6 +1,28 @@
-// 선물 템플릿 25종 (마지막은 이름을 직접 쓰는 미스터리 상자). 선물 오브젝트 v11의 25종과 맞출 자리 — 지금은 이름만.
+// 선물 템플릿 25종 (scene3d/gifts.js와 같은 목록, tools/gen_gifts.py가 만듦). mystery는 이름을 직접 쓰는 미스터리 상자.
 export const GIFTS = [
-  '커피', '케이크', '초콜릿', '아이스크림', '치킨', '피자', '햄버거', '도넛', '마카롱', '빵',
-  '영화표', '책', '향초', '립밤', '핸드크림', '양말', '텀블러', '이어폰', '편지지', '곰인형',
-  '상품권', '꽃씨', '비타민', '미니 선풍기', '미스터리 상자',
-].map((name, i, a) => ({ id: 'g' + i, name, mystery: i === a.length - 1 }));
+  { id: 'coffee', name: '커피', cat: '카페', mystery: false },
+  { id: 'iced', name: '아이스 음료', cat: '카페', mystery: false },
+  { id: 'slice', name: '조각 케이크', cat: '디저트', mystery: false },
+  { id: 'cake', name: '홀케이크', cat: '디저트', mystery: false },
+  { id: 'chicken', name: '치킨', cat: '식사', mystery: false },
+  { id: 'icecream', name: '아이스크림', cat: '디저트', mystery: false },
+  { id: 'lipstick', name: '립스틱', cat: '뷰티', mystery: false },
+  { id: 'voucher', name: '상품권', cat: '그 밖에', mystery: false },
+  { id: 'tumbler', name: '텀블러', cat: '생활', mystery: false },
+  { id: 'perfume', name: '향수', cat: '뷰티', mystery: false },
+  { id: 'gloss', name: '립글로우', cat: '뷰티', mystery: false },
+  { id: 'delivery', name: '배달 봉투', cat: '식사', mystery: false },
+  { id: 'shopping', name: '쇼핑백', cat: '쇼핑', mystery: false },
+  { id: 'sticks', name: '막대 과자', cat: '간식', mystery: false },
+  { id: 'beauty', name: '뷰티 카드', cat: '그 밖에', mystery: false },
+  { id: 'macaron', name: '마카롱', cat: '디저트', mystery: false },
+  { id: 'cookie', name: '쿠키', cat: '간식', mystery: false },
+  { id: 'choco', name: '초콜릿', cat: '간식', mystery: false },
+  { id: 'handcream', name: '핸드크림', cat: '뷰티', mystery: false },
+  { id: 'book', name: '책', cat: '그 밖에', mystery: false },
+  { id: 'fruit', name: '과일 바구니', cat: '식사', mystery: false },
+  { id: 'meat', name: '고기 세트', cat: '식사', mystery: false },
+  { id: 'scarf', name: '목도리', cat: '생활', mystery: false },
+  { id: 'doll', name: '곰 인형', cat: '그 밖에', mystery: false },
+  { id: 'mystery', name: '미스터리 상자', cat: '그 밖에', mystery: true },
+];

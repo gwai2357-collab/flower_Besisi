@@ -74,7 +74,7 @@ export function seedDemo(){
   setSuggested();
   update(s => {
     s.letter.to = '지우'; s.letter.text = '생일 축하해! 올해도 네가 웃는 날이 많았으면 좋겠어.';
-    s.gift = { has: true, kind: '케이크', mystery: '', code: '', ask: '' };
+    s.gift = { has: true, kind: 'cake', mystery: '', code: '', ask: '' };
     s.character.nickname = s.character.nickname || '하나';
   });
 }

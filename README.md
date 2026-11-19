@@ -34,3 +34,5 @@ Node 없이도 정적 서버(`python -m http.server`)로 열립니다(index.html
 | `parcel.js` | 꽃망울 · 선물 오브젝트 v11 | 소포(베개 봉투·라벨·붉은 띠·말려 뜯기는 개봉선). 선물 25종과 튀어나오기는 받기 단계에서 |
 | `letter.js` | 꽃다발 실험 v0 | 펼쳐지는 3D 편지지 (캔버스 텍스처) |
 | `cloud.js` | (이번 시안에서 새로 만듦) | 3D 말풍선 — 유지 |
+
+| `gifts.js` | 선물 오브젝트 v11 | 선물 25종 (`tools/gen_gifts.py`가 만든 파일) |
