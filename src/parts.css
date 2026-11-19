@@ -67,7 +67,7 @@ html { overflow-x: hidden; max-width: 100%; }
   cursor: pointer; }
 /* 구름 그림(로우폴리 3D로 그려 둔 것) + 아래로 달리는 연결 공: 글씨 둘레로 살짝 삐져나옴 */
 /* 3D 구름은 글씨 뒤의 캔버스에 매 프레임 그려짐 (cloud.js). 작아지면(mini) 글씨는 숨고 ··· 만 남는다 */
-.bubble .bg3d { position: absolute; left: -11px; top: -9px; width: calc(100% + 22px); height: calc(100% + 44px); image-rendering: pixelated; z-index: -1; pointer-events: none; }
+.bubble .bg3d { position: absolute; left: -41px; top: -39px; width: calc(100% + 82px); height: calc(100% + 104px); image-rendering: pixelated; z-index: -1; pointer-events: none; }   /* 구름 영역(+22/+44) + 사방 여백 30px */
 .bubble .bdots { display: none; font-size: calc(16px * var(--fs)); letter-spacing: 2px; line-height: 1; }
 .bubble.mini { padding: 5px 16px; margin-bottom: 30px; }
 .bubble.mini .btext { display: none; }

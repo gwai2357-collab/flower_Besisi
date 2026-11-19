@@ -3,7 +3,8 @@
 // 말풍선은 상황에 따라 작아졌다가(···) 누르면 커지며 펼쳐진다: 화면을 덜 가리게.
 import * as THREE from 'three';
 
-export const TAIL = 26;   // 말풍선 아래에 달리는 연결 공들이 들어갈 높이(px)
+export const TAIL = 26, MARGIN = 30;   // MARGIN: 돌릴 때 구름이 그림 밖으로 잘리지 않게 두는 여백(px)
+const camFor = (w, H2, m) => { const fov = 24, hh = H2 + 2 * m, dist = (hh / 2) / Math.tan(fov * Math.PI / 360) * 1.02, c = new THREE.PerspectiveCamera(fov, (w + 2 * m) / hh, 1, dist * 4); c.position.set(0, 0, dist); c.lookAt(0, 0, 0); return c; };   // 말풍선 아래에 달리는 연결 공들이 들어갈 높이(px)
 let R = null;
 const geoCache = new Map(), imgCache = new Map();
 const mat = new THREE.MeshStandardMaterial({ color: '#fffaf6', flatShading: true, roughness: 0.95 });
@@ -13,8 +14,10 @@ function renderer(){
   const r = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false, preserveDrawingBuffer: true });
   r.setClearColor(0x000000, 0);
   const scene = new THREE.Scene();
-  scene.add(new THREE.HemisphereLight('#ffffff', '#e9c9d2', 1.6));
-  const d = new THREE.DirectionalLight('#ffffff', 1.2); d.position.set(0.5, 0.8, 2); scene.add(d);
+  // 입체감: 주변광은 낮추고, 위·왼쪽에서 센 빛 + 반대편 약한 보조광 → 덩어리마다 밝고 어두운 면이 뚜렷하게 나뉨
+  scene.add(new THREE.HemisphereLight('#ffffff', '#b99aa8', 0.75));
+  const d = new THREE.DirectionalLight('#fffaf0', 2.4); d.position.set(-0.9, 1.2, 1.4); scene.add(d);
+  const f = new THREE.DirectionalLight('#cfe4ff', 0.45); f.position.set(1.2, -0.4, 0.8); scene.add(f);
   R = { r, scene, canvas, cur: null };
   return R;
 }
@@ -22,32 +25,33 @@ function renderer(){
 function buildCloud(w, h){
   const key = `${Math.round(w / 8)}x${Math.round(h / 8)}`;
   if (geoCache.has(key)) return geoCache.get(key);
-  const H2 = h + TAIL, body = new THREE.Group(), g = new THREE.Group(), rad = Math.min(w, h) * 0.2, depth = rad * 0.5;
+  const H2 = h + TAIL, body = new THREE.Group(), g = new THREE.Group(), rad = Math.min(w, h) * 0.2, depth = rad * 1.1;   // 두툼하게
   body.position.y = TAIL / 2; g.add(body);   // 본체는 위쪽 h만큼, 꼬리 공은 아래 TAIL 구역
   body.add(new THREE.Mesh(new THREE.BoxGeometry(w - rad * 1.4, h - rad * 1.4, depth), mat));
   let seed = Math.round(w * 7 + h * 13);
   const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-  const bump = (x, y) => { const m = new THREE.Mesh(new THREE.IcosahedronGeometry(rad * (0.65 + rnd() * 0.75), 1), mat); m.position.set(x + (rnd() - 0.5) * rad * 0.7, y + (rnd() - 0.5) * rad * 0.7, 0); m.scale.z = 0.5; body.add(m); };
+  const bump = (x, y) => { const m = new THREE.Mesh(new THREE.IcosahedronGeometry(rad * (0.65 + rnd() * 0.75), 1), mat); m.position.set(x + (rnd() - 0.5) * rad * 0.7, y + (rnd() - 0.5) * rad * 0.7, 0); m.scale.z = 1.0; m.position.z = (rnd() - 0.3) * rad * 0.5; body.add(m); };   // 덩어리를 둥글게(납작하지 않게) + 앞뒤로 어긋나게
   const hw = w / 2 - rad * 0.75, hh = h / 2 - rad * 0.75, step = rad * 1.05;
   for (let x = -hw; x <= hw + 1; x += step){ bump(x, hh); bump(x, -hh); }
   for (let y = -hh + step; y < hh - 1; y += step){ bump(-hw, y); bump(hw, y); }
-  const ball = (x, y, r2) => { const m = new THREE.Mesh(new THREE.IcosahedronGeometry(r2, 1), mat); m.position.set(x, y, 0); m.scale.z = 0.6; g.add(m); };
+  const ball = (x, y, r2) => { const m = new THREE.Mesh(new THREE.IcosahedronGeometry(r2, 1), mat); m.position.set(x, y, 0); m.scale.z = 1.0; g.add(m); };
   ball(-w / 2 + rad * 2.2, -H2 / 2 + 11, 6.5); ball(-w / 2 + rad * 2.2 - 11, -H2 / 2 + 4.5, 3.8);
-  const o = { g, w, h, H2, cam: new THREE.OrthographicCamera(-w / 2, w / 2, H2 / 2, -H2 / 2, -500, 500) };
+  // 원근 카메라(좁은 화각): 돌릴 때 앞쪽이 커지고 뒤쪽이 작아져 입체로 보임
+  const o = { g, w, h, H2, cam: camFor(w, H2, MARGIN), camStatic: camFor(w, H2, 0) };
   geoCache.set(key, o); return o;
 }
-function draw(o, ry = 0, rx = 0){
-  const { r, scene, canvas } = renderer(), pw = Math.max(24, Math.round(o.w * 0.42)), ph = Math.max(20, Math.round(o.H2 * 0.42));
+function draw(o, ry = 0, rx = 0, m = MARGIN){
+  const { r, scene, canvas } = renderer(), pw = Math.max(24, Math.round((o.w + 2 * m) * 0.42)), ph = Math.max(20, Math.round((o.H2 + 2 * m) * 0.42));
   r.setSize(pw, ph, false);
   if (R.cur !== o.g){ if (R.cur) scene.remove(R.cur); scene.add(o.g); R.cur = o.g; }
-  o.g.rotation.set(rx, ry, 0); r.render(scene, o.cam);
+  o.g.rotation.set(rx, ry, 0); r.render(scene, m ? o.cam : o.camStatic);
   return canvas;
 }
 // 정지 그림(dataURL): 상단 설정 아이콘 구름처럼 움직일 필요 없는 곳용
 export function cloudImage(w, h){
   const o = buildCloud(w, h), key = `${Math.round(w / 8)}x${Math.round(h / 8)}`;
   if (imgCache.has(key)) return imgCache.get(key);
-  const url = draw(o).toDataURL('image/png'); imgCache.set(key, url); return url;
+  const url = draw(o, 0, 0, 0).toDataURL('image/png'); imgCache.set(key, url); return url;
 }
 
 // ---------- 스크롤하면 모든 말풍선이 스크롤 방향으로 은은하게 좌우로 흔들림 (--sway) ----------
@@ -74,7 +78,7 @@ if (typeof window !== 'undefined' && !window.__bubbleOn){
       b.__seen = true;
       const w = b.offsetWidth, h = b.offsetHeight; if (!w || !h) continue;
       const cv = b.__cv, o = buildCloud(w + 22, h + 18);
-      const src = draw(o, Math.sin(t * 0.0011 + b.__ph) * 0.2 + ptr.x * 0.18, Math.sin(t * 0.0008 + b.__ph * 2) * 0.1 - ptr.y * 0.1);
+      const src = draw(o, Math.sin(t * 0.0013 + b.__ph) * 0.42 + ptr.x * 0.3, Math.sin(t * 0.0009 + b.__ph * 2) * 0.2 - ptr.y * 0.18);
       if (cv.width !== src.width || cv.height !== src.height){ cv.width = src.width; cv.height = src.height; }
       const c2 = cv.getContext('2d'); c2.imageSmoothingEnabled = false; c2.clearRect(0, 0, cv.width, cv.height); c2.drawImage(src, 0, 0);
     }
