@@ -106,6 +106,24 @@ export function createStage(host, opts = {}){
     onTap(h){ tapHandlers.add(h); return () => tapHandlers.delete(h); },
     setInset(px){ inset = px; applyInset(); },
     setFit(k){ fitTarget = k; framesLeft = 3; },
+    // 지금 올려 둔 3D 물체가 화면에서 차지하는 영역(CSS px, 뷰포트 기준). 접힌 말풍선이 그 오른쪽 경계 옆에 떠 있게 하는 데 씀. 0.25초 동안 같은 값 재사용
+    contentScreenBox(){
+      const now = performance.now(); if (api.__cb && now - api.__cbAt < 250 && api.__cbFor === content) return api.__cb;
+      let box = null; const r = canvas.getBoundingClientRect();
+      if (content){
+        const b3 = new THREE.Box3().setFromObject(content);
+        if (!b3.isEmpty()){
+          const v = new THREE.Vector3(); let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+          for (const x of [b3.min.x, b3.max.x]) for (const y of [b3.min.y, b3.max.y]) for (const z of [b3.min.z, b3.max.z]){
+            v.set(x, y, z).project(camera); const sx = r.left + (v.x + 1) / 2 * r.width, sy = r.top + (1 - v.y) / 2 * r.height;
+            x0 = Math.min(x0, sx); y0 = Math.min(y0, sy); x1 = Math.max(x1, sx); y1 = Math.max(y1, sy);
+          }
+          box = { x0, y0, x1, y1 };
+        }
+      }
+      const out = { box, area: { left: r.left, top: r.top, right: r.right, bottom: r.bottom } };
+      api.__cb = out; api.__cbAt = now; api.__cbFor = content; return out;
+    },
     refreshBackground(){
       const c = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#bce1da';
       scene.background = new THREE.Color(c); framesLeft = 3;

@@ -68,17 +68,24 @@ if (typeof window !== 'undefined' && !window.__bubbleOn){
   addEventListener('deviceorientation', e => { if (e.gamma == null) return; ptr.x = Math.max(-1, Math.min(1, e.gamma / 25)); ptr.y = Math.max(-1, Math.min(1, (e.beta - 45) / 25)); });
   // 3D 캔버스를 눌러 드래그하기 시작하면 말풍선을 접음
   addEventListener('pointerdown', e => { if (e.target && e.target.tagName === 'CANVAS' && !e.target.classList.contains('bg3d')) shrinkAll(); }, true);
-  // 모든 말풍선을 매 프레임(약 24fps) 살짝 돌려 가며 다시 그림
+  // 모든 말풍선을 매 프레임(약 24fps) 살짝 돌려 가며 다시 그림. 접힌(···) 말풍선은 3D 물체(꽃다발+캐릭터)의 오른쪽 경계를 따라 둥둥 떠다님
   let last = 0;
   const loop = t => {
     requestAnimationFrame(loop);
     if (t - last < 42 || document.hidden) return; last = t;
     for (const b of bubbles){
       if (!b.isConnected){ if (b.__seen) bubbles.delete(b); continue; }
-      b.__seen = true;
       const w = b.offsetWidth, h = b.offsetHeight; if (!w || !h) continue;
+      if (!b.__seen){ b.__seen = true; b.type(); }   // 화면에 처음 나올 때 한 글자씩
+      const mini = b.classList.contains('mini');
+      // 접힌 상태: 원래 자리에서 오른쪽 중앙(3D 물체 경계 옆)까지 옮겨 둠. 펼치면 transform이 사라져 슉 하고 제자리로 돌아오며 커짐
+      if (mini && anchorFn){
+        const r = b.getBoundingClientRect(), hx = r.left + r.width / 2 - (b.__tx || 0), hy = r.top + r.height / 2 - (b.__ty || 0), tg = anchorFor(w, h);
+        b.__tx = tg.x - hx; b.__ty = tg.y - hy; b.style.transform = `translate(${b.__tx.toFixed(1)}px, ${b.__ty.toFixed(1)}px)`;
+      } else if (!mini && b.__tx){ b.__tx = b.__ty = 0; b.style.transform = ''; }
+      const amp = mini ? 1 : 0.35;   // 펼친 상태는 차분하게, 접힌 상태(···)는 살짝 더 출렁
       const cv = b.__cv, o = buildCloud(w + 22, h + 18);
-      const src = draw(o, Math.sin(t * 0.0013 + b.__ph) * 0.42 + ptr.x * 0.3, Math.sin(t * 0.0009 + b.__ph * 2) * 0.2 - ptr.y * 0.18);
+      const src = draw(o, (Math.sin(t * 0.0013 + b.__ph) * 0.34 + ptr.x * 0.22) * amp, (Math.sin(t * 0.0009 + b.__ph * 2) * 0.16 - ptr.y * 0.12) * amp);
       if (cv.width !== src.width || cv.height !== src.height){ cv.width = src.width; cv.height = src.height; }
       const c2 = cv.getContext('2d'); c2.imageSmoothingEnabled = false; c2.clearRect(0, 0, cv.width, cv.height); c2.drawImage(src, 0, 0);
     }
@@ -86,26 +93,63 @@ if (typeof window !== 'undefined' && !window.__bubbleOn){
   requestAnimationFrame(loop);
 }
 
+// 접힌 말풍선이 떠 있을 자리: 3D 물체(꽃다발+캐릭터) 화면 영역의 오른쪽 경계 바로 옆, 세로로는 영역의 가운데.
+let anchorFn = null;
+export const setBubbleAnchor = f => { anchorFn = f; };
+function anchorFor(w, h){
+  const a = anchorFn() || {}, area = a.area || { left: 0, top: 0, right: innerWidth, bottom: innerHeight }, box = a.box, W = area.right - area.left, H = area.bottom - area.top;
+  let x = area.right - w / 2 - 10, y = area.top + H * 0.42;
+  if (box){ x = Math.min(area.right - w / 2 - 10, Math.max(area.left + W * 0.55, box.x1 + w / 2 + 8)); y = Math.min(area.top + H * 0.62, Math.max(area.top + 100, (box.y0 + box.y1) / 2)); }
+  return { x, y };
+}
+
+// 글자를 한 글자씩 보이게 하는 도우미 (<b>, <br> 같은 태그는 그대로 두고 글자만 차례로)
+function typeInto(node, ms = 34){
+  const walker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT), parts = [];
+  for (let n = walker.nextNode(); n; n = walker.nextNode()){ parts.push([n, n.nodeValue]); n.nodeValue = ''; }
+  const total = parts.reduce((s, p) => s + p[1].length, 0); let shown = 0, stop = false;
+  const t0 = performance.now();
+  const tick = () => {
+    if (stop) return;
+    const k = Math.min(total, Math.floor((performance.now() - t0) / ms));
+    if (k !== shown){ shown = k; let left = k; for (const [n, str] of parts){ const c = Math.min(left, str.length); n.nodeValue = str.slice(0, c); left -= c; } }
+    if (shown < total) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+  return () => { stop = true; for (const [n, str] of parts) n.nodeValue = str; };
+}
+
 // ---------- 말풍선 요소 ----------
-// bubble(html): 펼쳐 있으면 글씨가 보이고, 작아지면(mini) "···"만 남는다. 누르면 다시 커지며 펼쳐진다. 처음엔 펼쳐 있다가 7초 뒤 또는 3D를 만지면 접힘.
+// bubble(html): 펼쳐 있으면 글씨가 보이고, 작아지면(mini) "···"만 남아 3D 물체 옆을 떠다닌다.
+// 누르면: 떠 있던 자리에서 원래 자리로 슉 움직이며 좌우로 넓어지고, 글씨가 한 글자씩 나온다. 처음엔 펼쳐 있다가 7초 뒤 또는 3D를 만지면 접힘.
 export function bubble(html){
   const el = document.createElement('div'); el.className = 'bubble';
   const cv = document.createElement('canvas'); cv.className = 'bg3d';
   const text = document.createElement('div'); text.className = 'btext'; text.innerHTML = html;
   const dots = document.createElement('div'); dots.className = 'bdots'; dots.textContent = '···';
   el.append(cv, text, dots);
-  el.__cv = cv; el.__ph = Math.random() * 6; el.__openedAt = performance.now();
-  let timer = 0;
+  el.__cv = cv; el.__ph = Math.random() * 6; el.__openedAt = performance.now(); el.__tx = el.__ty = 0;
+  let timer = 0, cancelType = null, html0 = html;
+  const arm = () => { clearTimeout(timer); timer = setTimeout(() => el.setMini(true), 7000); };
+  el.type = () => { cancelType && cancelType(); cancelType = typeInto(text); };
+  // m=true: 접기. m=false: 펼치기(작은 크기 → 자연 크기로 넓어지며 글씨가 나옴)
   el.setMini = m => {
     const was = el.classList.contains('mini');
-    el.classList.toggle('mini', m);
-    if (was !== m){ el.classList.remove('grow'); void el.offsetWidth; el.classList.add('grow'); }
-    clearTimeout(timer);
-    if (!m){ el.__openedAt = performance.now(); timer = setTimeout(() => el.setMini(true), 7000); }
+    if (m === was){ if (!m) arm(); return; }
+    cancelType && cancelType(); cancelType = null; clearTimeout(timer);
+    if (m){ el.style.width = el.style.height = ''; el.classList.add('mini'); el.classList.remove('grow'); void el.offsetWidth; el.classList.add('grow'); text.innerHTML = html0; return; }
+    const wm = el.offsetWidth, hm = el.offsetHeight;   // 접힌 크기 기록 → 펼친 자연 크기 측정 → 접힌 크기에서 시작해 자연 크기로 transition
+    el.classList.remove('mini'); el.style.width = el.style.height = ''; text.innerHTML = html0;
+    const wn = el.offsetWidth, hn = el.offsetHeight;
+    el.style.width = wm + 'px'; el.style.height = hm + 'px'; el.classList.add('expanding'); void el.offsetWidth;
+    el.style.width = wn + 'px'; el.style.height = hn + 'px';
+    el.type();
+    setTimeout(() => { el.style.width = el.style.height = ''; el.classList.remove('expanding'); }, 520);
+    el.__openedAt = performance.now(); arm();
   };
-  el.say = h => { text.innerHTML = h; el.setMini(false); };
+  el.say = h => { html0 = h; text.innerHTML = h; if (el.classList.contains('mini')) el.setMini(false); else { el.type(); arm(); } };
   el.addEventListener('click', () => el.setMini(!el.classList.contains('mini')));
   bubbles.add(el);
-  timer = setTimeout(() => el.setMini(true), 7000);
+  arm();
   return el;
 }

@@ -3,7 +3,7 @@ import { init, go, back, register, registry } from './router.js';
 import { el, toast } from './ui.js';
 import { t } from './strings.js';
 import { mountDev } from './dev.js';
-import { cloudImage } from './scene3d/cloud.js';
+import { cloudImage, setBubbleAnchor } from './scene3d/cloud.js';
 import { screens } from './screens/index.js';
 import { decodeGift, seedDemo } from './state.js';
 
@@ -27,6 +27,7 @@ app.append(topbar, root);
 const stage = createStage(document.getElementById('stage3d'));
 init({ root, stage }, (def, canBack) => { backBtn.style.visibility = canBack ? 'visible' : 'hidden'; document.title = `${t('app.name')} · ${def.title}`; });
 for (const s of screens) register(s);
+setBubbleAnchor(() => stage.contentScreenBox());   // 접힌 말풍선(···)이 3D 물체 옆에 떠 있게
 window.__ready = true;
 window.__besisi = { stage, go, registry };       // 시험·스크린샷용
 
