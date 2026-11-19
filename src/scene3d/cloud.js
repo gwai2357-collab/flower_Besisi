@@ -3,7 +3,8 @@
 // 말풍선은 상황에 따라 작아졌다가(···) 누르면 커지며 펼쳐진다: 화면을 덜 가리게.
 import * as THREE from 'three';
 
-export const TAIL = 26, MARGIN = 30;   // MARGIN: 돌릴 때 구름이 그림 밖으로 잘리지 않게 두는 여백(px)
+export const TAIL = 0, MARGIN = 30;   // 연결 공은 이제 구름과 따로 움직이는 별도 요소라 구름 그림에는 꼬리 영역이 없음
+const BALL = [{ dx: -0.30, gy: 16, size: 14 }, { dx: -0.36, gy: 30, size: 8 }];   // 구름 아래 왼쪽: 구름 폭/높이 대비 기본 위치(구름 가운데 기준)와 크기(px)   // MARGIN: 돌릴 때 구름이 그림 밖으로 잘리지 않게 두는 여백(px)
 const camFor = (w, H2, m) => { const fov = 24, hh = H2 + 2 * m, dist = (hh / 2) / Math.tan(fov * Math.PI / 360) * 1.02, c = new THREE.PerspectiveCamera(fov, (w + 2 * m) / hh, 1, dist * 4); c.position.set(0, 0, dist); c.lookAt(0, 0, 0); return c; };   // 말풍선 아래에 달리는 연결 공들이 들어갈 높이(px)
 let R = null;
 const geoCache = new Map(), imgCache = new Map();
@@ -34,8 +35,6 @@ function buildCloud(w, h){
   const hw = w / 2 - rad * 0.75, hh = h / 2 - rad * 0.75, step = rad * 1.05;
   for (let x = -hw; x <= hw + 1; x += step){ bump(x, hh); bump(x, -hh); }
   for (let y = -hh + step; y < hh - 1; y += step){ bump(-hw, y); bump(hw, y); }
-  const ball = (x, y, r2) => { const m = new THREE.Mesh(new THREE.IcosahedronGeometry(r2, 1), mat); m.position.set(x, y, 0); m.scale.z = 1.0; g.add(m); };
-  ball(-w / 2 + rad * 2.2, -H2 / 2 + 11, 6.5); ball(-w / 2 + rad * 2.2 - 11, -H2 / 2 + 4.5, 3.8);
   // 원근 카메라(좁은 화각): 돌릴 때 앞쪽이 커지고 뒤쪽이 작아져 입체로 보임
   const o = { g, w, h, H2, cam: camFor(w, H2, MARGIN), camStatic: camFor(w, H2, 0) };
   geoCache.set(key, o); return o;
@@ -46,6 +45,15 @@ function draw(o, ry = 0, rx = 0, m = MARGIN){
   if (R.cur !== o.g){ if (R.cur) scene.remove(R.cur); scene.add(o.g); R.cur = o.g; }
   o.g.rotation.set(rx, ry, 0); r.render(scene, m ? o.cam : o.camStatic);
   return canvas;
+}
+let ballUrl = null;
+function ballImage(){
+  if (ballUrl) return ballUrl;
+  const { r, scene, canvas } = renderer();
+  const m = new THREE.Mesh(new THREE.IcosahedronGeometry(10, 1), mat), cam = new THREE.OrthographicCamera(-11, 11, 11, -11, -50, 50);
+  if (R.cur){ scene.remove(R.cur); R.cur = null; }
+  scene.add(m); r.setSize(28, 28, false); m.rotation.set(0.4, 0.6, 0); r.render(scene, cam); ballUrl = canvas.toDataURL('image/png'); scene.remove(m);
+  return ballUrl;
 }
 // 정지 그림(dataURL): 상단 설정 아이콘 구름처럼 움직일 필요 없는 곳용
 export function cloudImage(w, h){
@@ -68,26 +76,44 @@ if (typeof window !== 'undefined' && !window.__bubbleOn){
   addEventListener('deviceorientation', e => { if (e.gamma == null) return; ptr.x = Math.max(-1, Math.min(1, e.gamma / 25)); ptr.y = Math.max(-1, Math.min(1, (e.beta - 45) / 25)); });
   // 3D 캔버스를 눌러 드래그하기 시작하면 말풍선을 접음
   addEventListener('pointerdown', e => { if (e.target && e.target.tagName === 'CANVAS' && !e.target.classList.contains('bg3d')) shrinkAll(); }, true);
-  // 모든 말풍선을 매 프레임(약 24fps) 살짝 돌려 가며 다시 그림. 접힌(···) 말풍선은 3D 물체(꽃다발+캐릭터)의 오른쪽 경계를 따라 둥둥 떠다님
-  let last = 0;
+  // 말풍선 움직임은 용수철(감쇠 이동)로 매 프레임 계산해서 은은하게 따라가고, 구름 그림은 약 24fps로 다시 그림.
+  // 접힌(···) 말풍선은 3D 물체의 오른쪽 경계 옆으로, 펼치면 원래 자리로 부드럽게 이동. 연결 공 두 개는 각각 앞의 것을 천천히 뒤따라옴.
+  let last = 0, tPrev = performance.now();
+  const spring = (b, key, target, k, dt) => {   // 임계감쇠 용수철: 넘치거나 튕기지 않고 목표로 다가감
+    const c = 2 * Math.sqrt(k), x = b[key], v = b[key + 'v'] || 0, a = k * (target - x) - c * v;
+    b[key + 'v'] = v + a * dt; b[key] = x + b[key + 'v'] * dt;
+  };
   const loop = t => {
     requestAnimationFrame(loop);
-    if (t - last < 42 || document.hidden) return; last = t;
+    const dt = Math.min(0.05, (t - tPrev) / 1000); tPrev = t;
+    const draw24 = t - last >= 42; if (draw24) last = t;
+    if (document.hidden) return;
     for (const b of bubbles){
       if (!b.isConnected){ if (b.__seen) bubbles.delete(b); continue; }
       const w = b.offsetWidth, h = b.offsetHeight; if (!w || !h) continue;
       if (!b.__seen){ b.__seen = true; b.type(); }   // 화면에 처음 나올 때 한 글자씩
       const mini = b.classList.contains('mini');
-      // 접힌 상태: 원래 자리에서 오른쪽 중앙(3D 물체 경계 옆)까지 옮겨 둠. 펼치면 transform이 사라져 슉 하고 제자리로 돌아오며 커짐
-      if (mini && anchorFn){
-        const r = b.getBoundingClientRect(), hx = r.left + r.width / 2 - (b.__tx || 0), hy = r.top + r.height / 2 - (b.__ty || 0), tg = anchorFor(w, h);
-        b.__tx = tg.x - hx; b.__ty = tg.y - hy; b.style.transform = `translate(${b.__tx.toFixed(1)}px, ${b.__ty.toFixed(1)}px)`;
-      } else if (!mini && b.__tx){ b.__tx = b.__ty = 0; b.style.transform = ''; }
-      const amp = mini ? 1 : 0.35;   // 펼친 상태는 차분하게, 접힌 상태(···)는 살짝 더 출렁
-      const cv = b.__cv, o = buildCloud(w + 22, h + 18);
-      const src = draw(o, (Math.sin(t * 0.0013 + b.__ph) * 0.34 + ptr.x * 0.22) * amp, (Math.sin(t * 0.0009 + b.__ph * 2) * 0.16 - ptr.y * 0.12) * amp);
-      if (cv.width !== src.width || cv.height !== src.height){ cv.width = src.width; cv.height = src.height; }
-      const c2 = cv.getContext('2d'); c2.imageSmoothingEnabled = false; c2.clearRect(0, 0, cv.width, cv.height); c2.drawImage(src, 0, 0);
+      // 구름의 원래(펼친) 자리 = 지금 보이는 위치에서 현재 이동량을 뺀 값
+      const r = b.getBoundingClientRect(), hx = r.left + r.width / 2 - b.__tx, hy = r.top + r.height / 2 - b.__ty;
+      let gx = 0, gy = 0;
+      if (mini && anchorFn){ const tg = anchorFor(w, h); gx = tg.x - hx; gy = tg.y - hy; }
+      spring(b, '__tx', gx, 14, dt); spring(b, '__ty', gy, 14, dt);
+      b.style.transform = Math.abs(b.__tx) + Math.abs(b.__ty) < 0.05 ? '' : `translate(${b.__tx.toFixed(2)}px, ${b.__ty.toFixed(2)}px)`;
+      // 연결 공: 구름 기본 위치(구름 가운데 + 오프셋)를 목표로, 첫 공은 구름을, 둘째 공은 첫 공을 천천히 뒤따름
+      let tgx = b.__tx, tgy = b.__ty;   // 첫 공은 구름의 이동량을, 둘째 공은 첫 공의 이동량을 용수철로 뒤따름 (절대 이동량 기준)
+      b.__balls.forEach((ball, i) => {
+        const base = BALL[i], bx = base.dx * w, by = h / 2 + base.gy, kk = i ? 5 : 8;
+        spring(ball, 'qx', tgx, kk, dt); spring(ball, 'qy', tgy, kk, dt);
+        ball.el.style.transform = `translate(${(bx + ball.qx - b.__tx).toFixed(2)}px, ${(by + ball.qy - b.__ty).toFixed(2)}px)`;   // 부모(구름)가 이미 b.__tx 만큼 움직였으니 차이만 더함
+        tgx = ball.qx; tgy = ball.qy;
+      });
+      if (draw24){
+        const amp = mini ? 1 : 0.35;   // 펼친 상태는 차분하게, 접힌 상태(···)는 살짝 더 출렁
+        const cv = b.__cv, o = buildCloud(w + 22, h + 18);
+        const src = draw(o, (Math.sin(t * 0.0013 + b.__ph) * 0.34 + ptr.x * 0.22) * amp, (Math.sin(t * 0.0009 + b.__ph * 2) * 0.16 - ptr.y * 0.12) * amp);
+        if (cv.width !== src.width || cv.height !== src.height){ cv.width = src.width; cv.height = src.height; }
+        const c2 = cv.getContext('2d'); c2.imageSmoothingEnabled = false; c2.clearRect(0, 0, cv.width, cv.height); c2.drawImage(src, 0, 0);
+      }
     }
   };
   requestAnimationFrame(loop);
@@ -128,6 +154,8 @@ export function bubble(html){
   const text = document.createElement('div'); text.className = 'btext'; text.innerHTML = html;
   const dots = document.createElement('div'); dots.className = 'bdots'; dots.textContent = '···';
   el.append(cv, text, dots);
+  // 연결 공 두 개(구름과 따로, 각각 앞의 것을 뒤따라옴). 위치는 loop가 정함
+  el.__balls = BALL.map(bb => { const i = document.createElement('img'); i.className = 'tball'; i.src = ballImage(); i.style.width = i.style.height = bb.size + 'px'; i.style.margin = (-bb.size / 2) + 'px 0 0 ' + (-bb.size / 2) + 'px'; el.append(i); return { el: i, qx: 0, qy: 0 }; });
   el.__cv = cv; el.__ph = Math.random() * 6; el.__openedAt = performance.now(); el.__tx = el.__ty = 0;
   let timer = 0, cancelType = null, html0 = html;
   const arm = () => { clearTimeout(timer); timer = setTimeout(() => el.setMini(true), 7000); };

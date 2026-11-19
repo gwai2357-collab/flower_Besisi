@@ -67,9 +67,9 @@ html { overflow-x: hidden; max-width: 100%; }
   cursor: pointer; }
 /* 구름 그림(로우폴리 3D로 그려 둔 것) + 아래로 달리는 연결 공: 글씨 둘레로 살짝 삐져나옴 */
 /* 3D 구름은 글씨 뒤의 캔버스에 매 프레임 그려짐 (cloud.js). 작아지면(mini) 글씨는 숨고 ··· 만 남는다 */
-.bubble .bg3d { position: absolute; left: -41px; top: -39px; width: calc(100% + 82px); height: calc(100% + 104px); image-rendering: pixelated; z-index: -1; pointer-events: none; }   /* 구름 영역(+22/+44) + 사방 여백 30px */
+.bubble .bg3d { position: absolute; left: -41px; top: -39px; width: calc(100% + 82px); height: calc(100% + 78px); image-rendering: pixelated; z-index: -1; pointer-events: none; }   /* 구름 영역(+22/+44) + 사방 여백 30px */
 .bubble .bdots { display: none; font-size: calc(16px * var(--fs)); letter-spacing: 2px; line-height: 1; }
-.bubble { transition: transform .6s cubic-bezier(.2, .9, .25, 1.08), width .5s ease-out, height .5s ease-out; }
+.bubble { transition: width .5s ease-out, height .5s ease-out; }   /* 위치 이동은 JS 용수철(cloud.js)이 맡음: 튕김 없이 부드럽게 */
 .bubble.expanding { overflow: visible; }
 .bubble.expanding .btext { white-space: nowrap; }
 .bubble.mini { padding: 5px 16px; margin-bottom: 30px; z-index: 4; }
@@ -144,3 +144,6 @@ input, textarea, select { font-size: max(16px, calc(16px * var(--fs))) !importan
 .pop { animation: pop .7s cubic-bezier(.2, 1.6, .4, 1) both; }
 @keyframes pop { from { transform: scale(.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 .spark { position: fixed; z-index: 30; pointer-events: none; width: 10px; height: 10px; image-rendering: pixelated; }
+
+/* 연결 공: 구름 가운데를 기준으로 loop가 옮김 */
+.bubble .tball { position: absolute; left: 50%; top: 50%; margin: -7px 0 0 -7px; image-rendering: pixelated; pointer-events: none; z-index: -1; }
