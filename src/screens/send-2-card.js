@@ -62,7 +62,7 @@ export default {
     const drawDots = () => dots.replaceChildren(...PAPER_COLORS.slice(0, 5).map(c => el('button', { class: lt.paper === c ? 'on' : '', style: { background: c }, 'aria-label': c,
       onclick: () => { update(s => { s.letter.paper = c; }); drawDots(); paintPaper(); } })));
     const tool = (txt, label, fn) => el('button', { class: 'btn', 'aria-label': label, onclick: fn }, txt);
-    const tools = el('div', { class: 'row' },
+    const tools = el('div', { class: 'row wrap' },
       tool('🎙', t('send.card.tools.mic'), () => toast(t('send.card.micSoon'))),
       tool('T', t('send.card.tools.text'), () => mode('text')),
       tool('✎', t('send.card.tools.pen'), () => mode('pen')),
