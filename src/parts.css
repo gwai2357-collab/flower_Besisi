@@ -113,3 +113,6 @@ html { overflow-x: hidden; max-width: 100%; }
 /* 마감일 화살표(S0-1) */
 .stepper { display: inline-flex; flex-direction: column; gap: 2px; }
 .stepper button { padding: 1px 12px; line-height: 1; font-size: 11px; }
+
+/* 넓은 화면(컴퓨터)에서도 휴대폰과 같은 모습: 3D 무대도 UI와 같은 폭(최대 520px) 한 줄로 가운데에 둠 */
+#stage3d { left: 50%; right: auto; width: min(100%, 520px); transform: translateX(-50%); }
