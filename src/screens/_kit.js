@@ -12,7 +12,7 @@ export function layout(ctx, bubbleText){
   const placeFloats = () => floats.forEach(f => { f.style.bottom = (sheetEl ? sheetEl.offsetHeight : 0) + 6 + 'px'; });
   return {
     top, spacer, bubbleEl: b,
-    say(text){ b.innerHTML = text; if (!b.isConnected) top.append(b); },
+    say(text){ b.say(text); if (!b.isConnected) top.append(b); },
     // 패널 위 왼쪽에 붙어서 패널과 함께 위아래로 움직이는 요소(되돌리기 아이콘 등)
     float(node){ node.classList.add('sheet-float'); ctx.root.append(node); floats.push(node); placeFloats(); return node; },
     // 아래 패널을 붙인다. 3D는 패널이 가린 만큼 위로 올라온다.

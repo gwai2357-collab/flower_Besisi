@@ -11,8 +11,7 @@
 <script>
 (function(){
   var box;
-  function show(m){ if(!box){ box=document.createElement('pre'); box.style.cssText='position:fixed;left:0;right:0;top:0;z-index:99999;margin:0;padding:8px;background:#b3203f;color:#fff;font:12px/1.4 monospace;white-space:pre-wrap;max-height:55vh;overflow:auto'; document.documentElement.appendChild(box); } box.textContent += m + '
-'; }
+  function show(m){ if(!box){ box=document.createElement('pre'); box.style.cssText='position:fixed;left:0;right:0;top:0;z-index:99999;margin:0;padding:8px;background:#b3203f;color:#fff;font:12px/1.4 monospace;white-space:pre-wrap;max-height:55vh;overflow:auto'; document.documentElement.appendChild(box); } box.textContent += m + String.fromCharCode(10); }
   window.__showErr = show;
   addEventListener('error', function(e){ show('오류: ' + (e.message||'') + ' @' + String(e.filename||'').split('/').pop() + ':' + (e.lineno||'')); });
   addEventListener('unhandledrejection', function(e){ show('약속 오류: ' + (e.reason && (e.reason.message||e.reason))); });

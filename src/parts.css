@@ -64,9 +64,16 @@ html { overflow-x: hidden; max-width: 100%; }
 
 /* 말풍선: 둥둥 떠 있는 느낌(위아래로 천천히) + 연결 동그라미 + 스크롤 방향으로 좌우 흔들림 */
 .bubble { position: relative; isolation: isolate; background: none !important; padding: 11px 26px; margin: -4px 0 32px; translate: var(--sway, 0px) 0; transition: translate .8s ease-out; animation: bob 3.4s ease-in-out infinite;
-  transform: perspective(520px) rotateX(var(--tx, 0deg)) rotateY(var(--ty, 0deg)); }
+  cursor: pointer; }
 /* 구름 그림(로우폴리 3D로 그려 둔 것) + 아래로 달리는 연결 공: 글씨 둘레로 살짝 삐져나옴 */
-.bubble::before { content: ""; position: absolute; left: -11px; right: -11px; top: -9px; bottom: -35px; background: var(--cloud) 0 0 / 100% 100% no-repeat; image-rendering: pixelated; z-index: -1; }
+/* 3D 구름은 글씨 뒤의 캔버스에 매 프레임 그려짐 (cloud.js). 작아지면(mini) 글씨는 숨고 ··· 만 남는다 */
+.bubble .bg3d { position: absolute; left: -11px; top: -9px; width: calc(100% + 22px); height: calc(100% + 44px); image-rendering: pixelated; z-index: -1; pointer-events: none; }
+.bubble .bdots { display: none; font-size: calc(16px * var(--fs)); letter-spacing: 2px; line-height: 1; }
+.bubble.mini { padding: 5px 16px; margin-bottom: 30px; }
+.bubble.mini .btext { display: none; }
+.bubble.mini .bdots { display: block; }
+.bubble.grow { animation: bob 3.4s ease-in-out infinite, grow .4s cubic-bezier(.2, 1.5, .4, 1); }
+@keyframes grow { from { scale: .55; } to { scale: 1; } }
 @keyframes bob { 0%, 100% { translate: var(--sway, 0px) 0; } 50% { translate: var(--sway, 0px) -4px; } }
 
 /* 설정: 톱니 하나 → 누르면 아이콘들이 왼쪽으로 주르륵 */
