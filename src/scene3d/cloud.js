@@ -102,7 +102,7 @@ if (typeof window !== 'undefined' && !window.__bubbleOn){
       // 연결 공: 구름 기본 위치(구름 가운데 + 오프셋)를 목표로, 첫 공은 구름을, 둘째 공은 첫 공을 천천히 뒤따름
       let tgx = b.__tx, tgy = b.__ty;   // 첫 공은 구름의 이동량을, 둘째 공은 첫 공의 이동량을 용수철로 뒤따름 (절대 이동량 기준)
       b.__balls.forEach((ball, i) => {
-        const base = BALL[i], bx = base.dx * w, by = h / 2 + base.gy, kk = i ? 5 : 8;
+        const base = BALL[i], bx = base.dx * w, by = h / 2 + base.gy, kk = i ? 11 : 16;
         spring(ball, 'qx', tgx, kk, dt); spring(ball, 'qy', tgy, kk, dt);
         ball.el.style.transform = `translate(${(bx + ball.qx - b.__tx).toFixed(2)}px, ${(by + ball.qy - b.__ty).toFixed(2)}px)`;   // 부모(구름)가 이미 b.__tx 만큼 움직였으니 차이만 더함
         tgx = ball.qx; tgy = ball.qy;
@@ -123,9 +123,12 @@ if (typeof window !== 'undefined' && !window.__bubbleOn){
 let anchorFn = null;
 export const setBubbleAnchor = f => { anchorFn = f; };
 function anchorFor(w, h){
-  const a = anchorFn() || {}, area = a.area || { left: 0, top: 0, right: innerWidth, bottom: innerHeight }, box = a.box, W = area.right - area.left, H = area.bottom - area.top;
-  let x = area.right - w / 2 - 10, y = area.top + H * 0.42;
-  if (box){ x = Math.min(area.right - w / 2 - 10, Math.max(area.left + W * 0.55, box.x1 + w / 2 + 8)); y = Math.min(area.top + H * 0.62, Math.max(area.top + 100, (box.y0 + box.y1) / 2)); }
+  const a = anchorFn() || {}, area = a.area || { left: 0, top: 0, right: innerWidth, bottom: innerHeight }, box = a.box, H = area.bottom - area.top;
+  const topMin = area.top + 54 + h / 2;                       // 위 막대(로고·톱니) 바로 아래까지만 올라감
+  const x = area.right - w / 2 - 10;                           // 기본 위치: 오른쪽 위
+  let y = Math.max(topMin, area.top + H * 0.2);
+  // 오브젝트(꽃다발+캐릭터)를 확대해서 영역이 말풍선 쪽으로 올라오면, 말풍선은 그 위쪽 경계 위로 밀려 올라감(더 못 올라가면 가장 위에서 멈춤)
+  if (box && box.x1 > x - w / 2 - 6 && box.y0 < y + h / 2 + 10) y = Math.max(topMin, box.y0 - h / 2 - 10);
   return { x, y };
 }
 
