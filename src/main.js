@@ -27,6 +27,7 @@ app.append(topbar, root);
 const stage = createStage(document.getElementById('stage3d'));
 init({ root, stage }, (def, canBack) => { backBtn.style.visibility = canBack ? 'visible' : 'hidden'; document.title = `${t('app.name')} · ${def.title}`; });
 for (const s of screens) register(s);
+window.__ready = true;
 window.__besisi = { stage, go, registry };       // 시험·스크린샷용
 
 if (q.has('dev')) mountDev(stage);
