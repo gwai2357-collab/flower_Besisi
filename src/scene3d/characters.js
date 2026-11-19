@@ -1328,6 +1328,10 @@ function renderOpts(){
 export { build, PALETTE, NAMES, ACC, specs as SPECS, POSES };
 // 꽃망울에서 고를 수 있는 6종 (핸드오프의 "캐릭터 6종")
 export const SIX = ['cat', 'dog', 'bear', 'rabbit', 'fox', 'human', 'hamster', 'bird', 'dino', 'robot', 'elephant', 'giraffe'];   // 처음 6종 + 캐릭터 실험 v0에서 6종 더
+// 화면에 보여 주는 이름들 (옵션 패널과 같은 목록)
+export const HAIR_STYLES = ['짧은','단발','올림','파마','장발','없음','가르마펌','장발 가르마','히메컷','장발 웨이브','땋은머리','묶음 애교머리','올린 컬','긴 옆가르마','반삭'];
+export const POSE_LABELS = ['기본','내밀기','수줍게','짠'];
+export const accLabel = k => (ACC.find(x => x[0] === k) || [k, k])[1];
 export const newSpec = (k, over = {}) => ({ ...JSON.parse(JSON.stringify(specs[k])), acc: {}, accC: {}, hold: 2, pose: 0, ...over });
 export function randomSpec(){
   const k = SIX[Math.floor(Math.random() * SIX.length)], pal = PALETTE[k], pick = a => Math.floor(Math.random() * a.length);
