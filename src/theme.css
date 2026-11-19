@@ -22,9 +22,11 @@
   --font-letter: "Nanum Myeongjo", "AppleMyungjo", Georgia, serif;
 
   --topbar-h: 48px;
-  --panel-h: 42vh;          /* 아래 패널 기본 높이 (올리면 커짐) */
+  --vh: 1vh;                /* 휴대폰 브라우저에서 주소창이 가리는 만큼을 뺀 화면 높이(dvh)가 되면 아래에서 바뀜 */
+  --panel-h: calc(var(--vh) * 42);   /* 아래 패널 기본 높이 (올리면 커짐) */
 }
 
+@supports (height: 1dvh) { :root { --vh: 1dvh; } }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font-family: var(--font); overscroll-behavior: none; }
 body { overflow: hidden; }
@@ -52,7 +54,7 @@ button:active { transform: scale(.98); }
 
 /* 아래 패널 */
 .sheet { flex: 0 0 auto; background: var(--panel); border-radius: var(--radius) var(--radius) 0 0; box-shadow: 0 -4px 20px rgba(0,0,0,.08); padding: 8px var(--gutter) calc(16px + env(safe-area-inset-bottom)); height: var(--panel-h); overflow-y: auto; transition: height .25s; }
-.sheet.tall { height: 78vh; }
+.sheet.tall { height: calc(var(--vh) * 78); }
 .sheet .grab { display: block; width: 100%; border: 0; background: none; padding: 4px 0 8px; }
 .sheet .grab::before { content: ""; display: block; width: 44px; height: 5px; border-radius: 3px; background: var(--chip-line); margin: 0 auto; }
 .sheet h2 { font-size: 15px; margin: 4px 0 8px; }
