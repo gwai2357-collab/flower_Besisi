@@ -1,42 +1,38 @@
-// S3 캐릭터: 닉네임은 여기서. 기본 / 랜덤 / 확정. 건너뛰면 랜덤 캐릭터. 아래 옵션 패널은 꽃 고르기와 같은 탭·칩 방식.
+// S3 캐릭터 (스케치: 말풍선 + 다발을 든 캐릭터 + 기본/랜덤/확정 + 옵션 패널). 캐릭터와 옵션은 캐릭터 실험 v0 그대로.
+// 닉네임은 여기서 받는다(브라우저에 기억해 다음엔 미리 채움). 건너뛰면 랜덤 캐릭터, 확정하면 그 캐릭터로 고정.
 import { el, toast } from '../ui.js';
 import { t } from '../strings.js';
-import { layout, chip } from './_kit.js';
-import { makeCharacter, CHARACTER_PRESETS, randomCharacter } from '../scene3d/character.js';
+import { layout } from './_kit.js';
+import { charObj, CHAR_CAM, DEFAULT_LOOK } from '../scene3d/previews.js';
+import { newSpec, randomSpec, mountCharacterOptions, SIX, NAMES } from '../scene3d/characters.js';
 import { state, update, setNickname } from '../state.js';
-
-const SWATCH = {
-  skin: ['#fbe0cf', '#f2c9a5', '#e8b995', '#d9a77c', '#b98260'],
-  hair: ['#2b2224', '#5a3a2a', '#8a6a4a', '#e9b44c', '#b86a5a', '#4a5c8a'],
-  outfit: ['#8fb8de', '#e88fa5', '#9bc28a', '#f2d27a', '#d9d2f0', '#f0f0ea'],
-};
-const PART_LABEL = { skin: '피부', hair: '머리', outfit: '옷' };
 
 export default {
   id: 'send-3-character', flow: 'send', title: '캐릭터',
   mount(ctx){
     const L = layout(ctx, t('send.character.bubble'));
-    if (!state.character.look) update(s => { s.character.look = { ...CHARACTER_PRESETS[0] }; });
-    let tab = 'skin';
-    const hold = { items: state.items, wrap: state.wrap };
-    const show = () => ctx.stage.show(makeCharacter(state.character.look, { holdBouquet: hold }), { target: [0, 0.42, 0], camera: [0, 0.55, 1.9], keepCamera: !!ctx.stage.content });
-    const nick = el('input', { class: 'field', maxlength: 12, placeholder: t('send.character.nicknamePh'), value: state.character.nickname, oninput: e => setNickname(e.target.value) });
-    const tabBar = el('div', { class: 'tabs' }), chips = el('div', { class: 'chips' });
-    const draw = () => {
-      tabBar.replaceChildren(...Object.keys(SWATCH).map(k => el('button', { class: k === tab ? 'on' : '', onclick: () => { tab = k; draw(); } }, PART_LABEL[k])));
-      chips.replaceChildren(...SWATCH[tab].map(c => chip('', { dot: c, cls: state.character.look[tab] === c ? 'today' : '', onclick: () => { update(s => { s.character.look[tab] = c; s.character.confirmed = false; }); draw(); show(); } })));
+    if (!state.character.look) update(s => { s.character.look = DEFAULT_LOOK(); });
+    const hold = () => ({ items: state.items, wrap: state.wrap });
+    const show = (obj, keep) => ctx.stage.show(obj, { ...CHAR_CAM, keepCamera: keep, minDistance: 1.2 });
+    const opts = el('div', { class: 'charopts' }), kinds = el('div', { class: 'seg wrap', style: { marginBottom: '8px' } });
+    const mount = () => {
+      const spec = state.character.look;
+      mountCharacterOptions(opts, spec, obj => { update(s => { s.character.confirmed = false; }); show(obj, true); }, { make: () => charObj(state.character.look, hold()), current: ctx.stage.content });
+      kinds.replaceChildren(...SIX.map(k => el('button', { class: spec.k === k ? 'on' : '', onclick: () => { update(s => { s.character.look = newSpec(k); s.character.confirmed = false; }); change(); } }, NAMES[k])));
     };
-    let presetI = 0;
-    const row = el('div', { class: 'row', style: { marginTop: '8px' } },
-      el('button', { class: 'btn', onclick: () => { presetI = (presetI + 1) % CHARACTER_PRESETS.length; update(s => { s.character.look = { ...CHARACTER_PRESETS[presetI] }; s.character.confirmed = false; }); draw(); show(); } }, t('send.character.basic')),
-      el('button', { class: 'btn', onclick: () => { update(s => { s.character.look = randomCharacter(); s.character.confirmed = false; }); draw(); show(); } }, '🎲 ' + t('send.character.random')),
+    const change = () => { show(charObj(state.character.look, hold()), true); mount(); };
+    const nick = el('input', { class: 'field', maxlength: 12, placeholder: t('send.character.nicknamePh'), value: state.character.nickname, oninput: e => setNickname(e.target.value) });
+    let i = 0;
+    const row = el('div', { class: 'row', style: { margin: '8px 0' } },
+      el('button', { class: 'btn', onclick: () => { i = (i + 1) % SIX.length; update(s => { s.character.look = newSpec(SIX[i]); s.character.confirmed = false; }); change(); } }, t('send.character.basic')),
+      el('button', { class: 'btn', onclick: () => { update(s => { s.character.look = randomSpec(); s.character.confirmed = false; }); change(); } }, '🎲 ' + t('send.character.random')),
       el('button', { class: 'btn primary', onclick: () => { update(s => { s.character.confirmed = true; }); toast(t('send.character.confirmed')); } }, t('send.character.confirm')),
-      el('button', { class: 'btn', onclick: () => { const a = el('a', { href: ctx.stage.canvas.toDataURL('image/png'), download: 'character.png' }); a.click(); } }, '⬇'));
+      el('span', { class: 'spacer' }),
+      el('button', { class: 'btn', 'aria-label': t('send.character.save'), onclick: () => { const a = el('a', { href: ctx.stage.canvas.toDataURL('image/png'), download: 'character.png' }); a.click(); } }, '⬇'));
     L.addSheet([el('p', { class: 'note', style: { marginTop: 0 } }, t('send.character.tip')),
-      el('div', { class: 'kv' }, el('span', {}, t('send.character.nickname')), nick), row, tabBar, chips,
-      el('p', { class: 'note' }, t('send.character.skipHint')),
-      el('button', { class: 'btn big primary', style: { width: '100%', marginTop: '8px' }, onclick: () => { if (!state.character.confirmed) update(s => { s.character.look = randomCharacter(); }); ctx.go('send-4-share'); } }, t('send.character.next'))]);
-    draw(); show();
+      el('div', { class: 'row' }, el('b', { style: { whiteSpace: 'nowrap' } }, t('send.character.nickname')), nick), row, kinds, opts,
+      el('button', { class: 'btn big primary', style: { width: '100%', marginTop: '10px' }, onclick: () => { if (!state.character.confirmed) update(s => { s.character.look = randomSpec(); }); ctx.go('send-4-share'); } }, t('send.character.next'))]);
+    show(charObj(state.character.look, hold()), false); mount();
     return () => L.dispose();
   },
 };

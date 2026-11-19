@@ -14,7 +14,7 @@ export const state = {
   wrap: 'paper',                   // 'paper' | 'kraft'
   letter: { to: '', text: '', paper: null /* null이면 다발 색으로 자동 */, relation: 'friend', drawing: null, voice: false },
   gift: { has: false, kind: '', mystery: '', code: '', ask: '' },
-  character: { nickname: lsGet(NICK_KEY), look: null, confirmed: false },
+  character: { nickname: lsGet(NICK_KEY), look: null /* 캐릭터 스펙(characters.js) */, confirmed: false },
   collect: { to: '', days: 7 },
   receive: { opened: false },
 };

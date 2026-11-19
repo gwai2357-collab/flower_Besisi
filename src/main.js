@@ -3,6 +3,7 @@ import { init, go, back, register, registry } from './router.js';
 import { el, toast } from './ui.js';
 import { t } from './strings.js';
 import { mountDev } from './dev.js';
+import { cloudImage } from './scene3d/cloud.js';
 import { screens } from './screens/index.js';
 import { decodeGift, seedDemo } from './state.js';
 
@@ -13,19 +14,14 @@ if (embed) document.body.classList.add('storyboard-embed');
 const app = document.getElementById('app');
 const topbar = el('div', { class: 'topbar' });
 const backBtn = el('button', { class: 'iconbtn', 'aria-label': t('common.back'), onclick: () => back() }, '‹');
-const settingsBtn = el('button', { class: 'iconbtn', 'aria-label': t('common.settings'), onclick: openSettings }, '⚙');
-topbar.append(el('div', { class: 'left' }, backBtn, el('span', { class: 'logo' }, t('app.logo'))), settingsBtn);
+// 설정: 효과음·BGM·VR 기울기를 구름 하나 안의 아이콘 셋으로 묶음 (스케치). 이번 시안엔 자리만, BGM 기본 꺼짐.
+const iconCloud = el('div', { class: 'iconcloud' });
+const iconBtn = (txt, label, on) => { const b = el('button', { 'aria-label': label, class: on ? '' : 'off', onclick: () => { b.classList.toggle('off'); toast(t('settings.soon')); } }, txt); return b; };
+iconCloud.append(iconBtn('🔊', t('settings.sfx'), true), iconBtn('♪', t('settings.bgm'), false), iconBtn('◎', t('settings.vr'), false));
+new ResizeObserver(() => { const w = iconCloud.offsetWidth, h = iconCloud.offsetHeight; if (w) iconCloud.style.backgroundImage = `url(${cloudImage(w + 16, h + 10)})`; }).observe(iconCloud);
+topbar.append(el('div', { class: 'left' }, backBtn, el('span', { class: 'logo' }, t('app.logo'))), iconCloud);
 const root = el('div', { id: 'screen' });
 app.append(topbar, root);
-
-// 설정: 효과음·BGM·VR 기울기를 한 곳에 묶음 (이번 시안엔 자리만, BGM 기본 꺼짐)
-function openSettings(){
-  if (document.getElementById('settings')) return document.getElementById('settings').remove();
-  const row = (label, on) => el('label', { class: 'row', style: { justifyContent: 'space-between', margin: '8px 0' } }, label, el('input', { type: 'checkbox', checked: on || null, onchange: () => toast(t('settings.soon')) }));
-  const box = el('div', { id: 'settings', class: 'sheet', style: { position: 'fixed', right: '12px', top: '52px', height: 'auto', width: '220px', borderRadius: '16px', zIndex: 30 } },
-    el('h2', {}, t('settings.title')), row(t('settings.sfx'), true), row(t('settings.bgm'), false), row(t('settings.vr'), false));
-  document.body.append(box);
-}
 
 const stage = createStage(document.getElementById('stage3d'));
 init({ root, stage }, (def, canBack) => { backBtn.style.visibility = canBack ? 'visible' : 'hidden'; document.title = `${t('app.name')} · ${def.title}`; });

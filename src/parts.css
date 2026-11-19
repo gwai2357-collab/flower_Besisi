@@ -1,0 +1,31 @@
+/* theme.css 위에 얹는 부품 모양: 캐릭터 옵션 패널, 설정 아이콘 구름, 공유 액자. 색·둥글기는 theme.css의 변수만 쓴다. */
+
+/* 캐릭터 옵션 패널 (캐릭터 실험 v0의 탭·칩·슬라이더를 그대로 쓰는 곳) */
+.charopts .lbl { font-size: 12px; color: var(--muted); margin: 12px 0 6px; }
+.charopts .seg { display: flex; background: #f1e4e8; border-radius: 10px; padding: 3px; gap: 2px; }
+.charopts .seg button { flex: 1; border: 0; background: transparent; padding: 8px 0; border-radius: 8px; font-size: 13px; color: var(--muted); }
+.charopts .seg.wrap { flex-wrap: wrap; }
+.charopts .seg.wrap button { flex: 1 0 23%; }
+.charopts .seg button.on { background: #fff; color: var(--ink); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+.charopts .seg.tabs { position: sticky; top: 0; z-index: 3; margin: 0 0 12px; }
+.charopts .swatches { display: flex; gap: 8px; flex-wrap: wrap; }
+.charopts .swatches button { width: 32px; height: 32px; border-radius: 50%; border: 2px solid rgba(0,0,0,.12); padding: 0; }
+.charopts .swatches button.on { border: 3px solid var(--ink); }
+.charopts .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.charopts .chips button { padding: 7px 11px; border-radius: 999px; border: 1px solid var(--chip-line); background: #fff; font-size: 13px; color: var(--ink); }
+.charopts .chips button.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+.charopts .row { display: block; margin: 10px 0; }
+.charopts .row label { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; }
+.charopts .row label span { color: var(--muted); }
+.charopts .wideBtn, .charopts #reshuffle { width: 100%; margin-top: 8px; padding: 9px; border-radius: 10px; border: 1px solid var(--chip-line); background: #fff; }
+
+/* 아래 패널은 가로로 넘치지 않게 */
+.sheet { overflow-x: hidden; }
+
+/* 설정 아이콘 묶음 (스케치: ▶ ♪ ◎ 가 한 구름 안에) */
+.iconcloud { display: flex; gap: 2px; padding: 6px 14px; background-size: 100% 100%; image-rendering: pixelated; }
+.iconcloud button { border: 0; background: none; font-size: 15px; padding: 2px 5px; color: var(--ink); }
+.iconcloud button.off { opacity: .4; }
+
+/* 공유 썸네일 액자 (S4) */
+.frame { margin: 0 auto; position: relative; border: 3px solid var(--ink); border-radius: 6px; aspect-ratio: 3 / 2; pointer-events: none; }

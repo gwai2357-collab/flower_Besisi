@@ -60,9 +60,9 @@ export function createStage(host, opts = {}){
     if (content){ scene.remove(content); content.traverse(x => x.geometry && x.geometry.dispose()); }
     content = obj; contentOpts = o;
     if (obj){ obj.position.y = o.y ?? 0; scene.add(obj); }
+    controls.minDistance = o.minDistance ?? 0.5;
     if (!o.keepCamera){ const tg = o.target || [0, 0.6, 0], cam = o.camera || [0.25, 0.8, 2.15]; controls.target.set(...tg); camera.position.set(...cam); controls.update(); }
     controls.enabled = o.controls !== false;
-    if (o.minDistance) controls.minDistance = o.minDistance;
     framesLeft = 3;
   }
   renderer.setAnimationLoop(() => {
@@ -73,6 +73,7 @@ export function createStage(host, opts = {}){
     const ud = content && content.userData;
     if (ud && ud.tagPivot){ ud.tagPivot.rotation.z = Math.sin(t * 1.4) * 0.16; ud.tagPivot.rotation.x = -0.1 + Math.sin(t * 1.1 + 0.6) * 0.08; }
     else if (ud && ud.noteMesh) ud.noteMesh.scale.setScalar(1 + Math.sin(t * 2.6) * 0.035);
+    if (ud && ud.charAnim) ud.charAnim(t);
     for (const f of listeners) f(dt, t);
     controls.update();
     if (ps1.on){ renderer.setRenderTarget(rt); renderer.render(scene, camera); renderer.setRenderTarget(null); renderer.render(postScene, postCam); }
