@@ -30,8 +30,9 @@ export function cloudImage(w, h){
   // 가장자리를 따라 둥근 덩어리를 늘어놓음 (모양이 같은 말풍선은 같은 구름)
   let seed = Math.round(w * 7 + h * 13);
   const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-  const bump = (x, y, k = 1) => { const m = new THREE.Mesh(new THREE.IcosahedronGeometry(rad * (0.85 + rnd() * 0.3) * k, 1), mat); m.position.set(x, y, 0); m.scale.z = 0.5; g.add(m); };
-  const hw = w / 2 - rad * 0.75, hh = h / 2 - rad * 0.75, step = rad * 1.25;
+  // 울퉁불퉁하게: 덩어리 크기를 크게 흔들고 가장자리에서 안팎으로 어긋나게 놓음
+  const bump = (x, y, k = 1) => { const m = new THREE.Mesh(new THREE.IcosahedronGeometry(rad * (0.65 + rnd() * 0.75) * k, 1), mat); m.position.set(x + (rnd() - 0.5) * rad * 0.7, y + (rnd() - 0.5) * rad * 0.7, 0); m.scale.z = 0.5; g.add(m); };
+  const hw = w / 2 - rad * 0.75, hh = h / 2 - rad * 0.75, step = rad * 1.05;
   for (let x = -hw; x <= hw + 1; x += step){ bump(x, hh); bump(x, -hh); }
   for (let y = -hh + step; y < hh - 1; y += step){ bump(-hw, y); bump(hw, y); }
   scene.add(g); R.group = g;
@@ -41,6 +42,14 @@ export function cloudImage(w, h){
 }
 
 // 말풍선 요소 만들기: <div class="bubble">글씨</div>. 크기가 정해지면 구름 그림을 배경으로 깐다.
+// 스크롤하면 모든 말풍선이 스크롤 방향으로 은은하게 좌우로 흔들림 (둥둥 뜬 느낌 = 입체감). 흔들림 값은 CSS 변수 --sway
+let swayT = 0; const lastTop = new WeakMap();
+function nudge(dir){ document.documentElement.style.setProperty('--sway', dir * 9 + 'px'); clearTimeout(swayT); swayT = setTimeout(() => document.documentElement.style.setProperty('--sway', '0px'), 260); }
+if (typeof window !== 'undefined' && !window.__swayOn){
+  window.__swayOn = true;
+  addEventListener('scroll', e => { const t = e.target; if (!t || t.scrollTop == null) return; const d = t.scrollTop - (lastTop.get(t) || 0); lastTop.set(t, t.scrollTop); if (Math.abs(d) > 1) nudge(d > 0 ? 1 : -1); }, true);
+  addEventListener('wheel', e => nudge(e.deltaY > 0 ? 1 : -1), { passive: true });
+}
 export function bubble(html){
   const el = document.createElement('div'); el.className = 'bubble'; el.innerHTML = html;
   let last = '';

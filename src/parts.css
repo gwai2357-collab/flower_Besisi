@@ -40,3 +40,76 @@
 
 /* 가로로 밀려나가는 화면 방지 (휴대폰에서 화면보다 넓어지면 고정 버튼이 화면 밖으로 밀림) */
 html { overflow-x: hidden; max-width: 100%; }
+
+/* ===== 피드백 반영 (2026-11-19 보드) ===== */
+:root {
+  /* 모든 UI에 얹는 미세한 PS1 디더 무늬 (4×4 점). 3D 꽃 그림에는 쓰지 않는다(3D는 이미 후처리 디더가 있음). */
+  --dither: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='4' height='4'><rect width='2' height='2' fill='%23000' fill-opacity='.045'/><rect x='2' y='2' width='2' height='2' fill='%23000' fill-opacity='.045'/></svg>");
+}
+.sheet { background: var(--dither), var(--panel); }
+.field, .tabs { background-image: var(--dither); }
+.chip { background-image: var(--dither); }
+.charopts .seg { background-image: var(--dither); }
+
+/* 버튼: 쿠킹마마 UI 사진을 참고해 가공 — 굵은 윤곽선 + 윗면 하이라이트 + 아랫면 두께, 조금 둥근 사각형, 조금 작게 */
+.btn { position: relative; border: 2px solid var(--ink); border-radius: 12px; padding: 6px 10px; font-size: 12.5px; font-weight: 600; line-height: 1.25;
+  background: var(--dither), linear-gradient(#ffffff, #f0e4e8);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.95), inset 0 -3px 0 rgba(43,29,34,.1), 0 2px 0 var(--ink); }
+.btn.primary { background: var(--dither), linear-gradient(#5d4c55, #2b1d22); color: #fff; border-color: #170f12;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.28), inset 0 -3px 0 rgba(0,0,0,.28), 0 2px 0 #000; }
+.btn.big { padding: 10px 10px; font-size: 14px; border-radius: 14px; }
+.btn:active { transform: translateY(2px); box-shadow: inset 0 2px 0 rgba(255,255,255,.6), 0 0 0 var(--ink); }
+.btn.ghost { border-color: transparent; background: none; box-shadow: none; }
+.iconbtn { border: 2px solid var(--ink); background: var(--dither), linear-gradient(#fff, #f0e4e8); box-shadow: 0 2px 0 var(--ink); }
+
+/* 말풍선: 둥둥 떠 있는 느낌(위아래로 천천히) + 연결 동그라미 + 스크롤 방향으로 좌우 흔들림 */
+.bubble { position: relative; translate: var(--sway, 0px) 0; transition: translate .8s ease-out; animation: bob 3.4s ease-in-out infinite; margin-bottom: 18px; }
+.bubble::after { content: ""; position: absolute; left: 22%; bottom: -16px; width: 9px; height: 9px; background: #fffaf6; border-radius: 50%; box-shadow: 12px 9px 0 -2px #fffaf6; image-rendering: pixelated; }
+@keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+
+/* 설정: 톱니 하나 → 누르면 아이콘들이 왼쪽으로 주르륵 */
+.gearwrap { display: flex; align-items: center; gap: 4px; }
+.gearwrap .iconcloud { padding: 4px 10px; opacity: 0; pointer-events: none; }
+.gearwrap .iconcloud button { opacity: 0; transform: translateX(22px); transition: opacity .25s, transform .3s; }
+.gearwrap.open .iconcloud { opacity: 1; pointer-events: auto; }
+.gearwrap.open .iconcloud button { opacity: 1; transform: none; }
+.gearwrap.open .iconcloud button.off { opacity: .4; }
+.gearwrap.open .iconcloud button:nth-child(3) { transition-delay: .02s; }
+.gearwrap.open .iconcloud button:nth-child(2) { transition-delay: .1s; }
+.gearwrap.open .iconcloud button:nth-child(1) { transition-delay: .18s; }
+.gearwrap > .iconbtn.gear { transition: transform .35s; }
+.gearwrap.open > .iconbtn.gear { transform: rotate(120deg); }
+
+/* 밝은 배경 위(3D 영역)에 직접 놓이는 글씨는 밝은 색 */
+.onbg { color: #fff; text-shadow: 0 1px 4px rgba(43, 29, 34, .35); }
+.onbg .btn { color: var(--ink); text-shadow: none; }
+.onbg .btn.primary { color: #fff; }
+.onbg .btn.ghost { color: #fff; text-shadow: 0 1px 4px rgba(43,29,34,.35); }
+
+/* 위 막대와 말풍선이 액자 바깥 가림막보다 위에 오도록 */
+.topbar { z-index: 3; }
+.bubble, .sheet { z-index: 2; }
+
+/* 되돌리기(꽃 고르기): 왼쪽 가운데 아이콘 */
+.undo-float { position: absolute; left: 10px; top: 46%; z-index: 2; width: 38px; height: 38px; border-radius: 12px; padding: 0; font-size: 18px; }
+
+/* 접을 수 있는 아래 패널 */
+.sheet.collapsed { height: 34px !important; overflow: hidden; padding-top: 4px; padding-bottom: 0; }
+.sheet.collapsed > :not(.grab) { display: none; }
+
+/* 잠긴 꽃: 회색 + 흰 그라디언트 */
+.chip.locked { opacity: 1; filter: grayscale(1); color: #8a8286; background: linear-gradient(135deg, #fff 0%, #e6e1e3 100%); }
+.chip.locked .dot { opacity: .45; }
+
+/* 공유 썸네일 액자(S4): 액자 바깥은 가림막으로 잘라 냄 + 아래에 흰 박스 */
+.frame { width: 100%; box-shadow: 0 0 0 300vmax var(--bg); border-radius: 4px 4px 0 0; border-bottom: 0; }
+.frame-caption { background: #fff; border: 3px solid var(--ink); border-top: 0; border-radius: 0 0 8px 8px; height: 54px; position: relative; z-index: 1; pointer-events: none; }
+
+/* 편지지 색 칩: 편지지 좌하단의 네모 버튼 (S2) */
+.paper-chips { position: absolute; left: 6%; bottom: 3.5%; display: flex; gap: 5px; pointer-events: auto; }
+.paper-chips button { width: 22px; height: 22px; border: 2px solid var(--ink); border-radius: 0; padding: 0; box-shadow: 2px 2px 0 rgba(43,29,34,.55); }
+.paper-chips button.on { outline: 2px solid #fff; outline-offset: 1px; }
+
+/* 마감일 화살표(S0-1) */
+.stepper { display: inline-flex; flex-direction: column; gap: 2px; }
+.stepper button { padding: 1px 12px; line-height: 1; font-size: 11px; }

@@ -24,7 +24,7 @@ export default {
       bubble: '꽃을 고르고 어울리는 소재를 골라 보세요',
       clear: '모두 삭제', shuffle: '위치 섞기', suggest: '추천 조합',
       tabs: { flower1: '꽃1', flower2: '꽃2', foliage: '소재', wrap: '포장' },
-      today: '오늘의 꽃', lockedHint: '받으면 열려요', pendingHint: '꽃 생성기에서 만드는 중이에요',
+      today: '오늘의 꽃', lockedNote: '회원가입 후 꽃 도감을 채우면 사용할 수 있어요', soonHint: '곧 열려요', lockedHint: '받으면 열려요', pendingHint: '꽃 생성기에서 만드는 중이에요',
       meaning: '{꽃}의 꽃말은 {뜻}예요', count: '{n}/{max}', full: '꽃은 최대 {max}송이까지예요 (소재 포함)',
       wrap: { paper: '종이 포장', kraft: '크라프트 미니' }, wrapFixed: '한 송이는 크라프트 미니 포장으로 정해져 있어요',
       next: '카드 쓰러 가기', empty: '꽃을 하나 이상 골라 주세요', singleBubble: '메인 꽃 한 송이와 소재를 골라 보세요',

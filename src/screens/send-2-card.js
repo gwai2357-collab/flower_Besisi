@@ -17,8 +17,9 @@ export default {
     // ---- 3D: 편지지 + 뒤의 소포 ----
     const group = new THREE.Group(), letter = makeLetter({ hint: t('send.card.textPh') });
     const parcel = parcelObj(0.075); parcel.position.set(0.085, -0.1, -0.08); parcel.rotation.set(0.5, -0.5, 0.25);
+    letter.group.position.y = -CH / 2;   // 펼친 편지는 [-CH/2, 3CH/2] 구간이라 가운데(0)에 오도록 내림
     const sheetG = new THREE.Group(); sheetG.add(letter.group); group.add(parcel, sheetG);
-    st.show(group, { camera: [0, 0.0, 0.38], target: [0, 0.0, 0], minDistance: 0.1, controls: false, sway: false, y: 0.0 });
+    st.show(group, { fitable: true, camera: [0, 0.0, 0.38], target: [0, 0.0, 0], minDistance: 0.1, controls: false, sway: false, y: 0.0 });
     let img = null;
     const refresh = () => letter.setPaper({ text: lt.text, paper: paperColor(), drawing: img, hint: t('send.card.textPh') });
     if (lt.drawing){ img = new Image(); img.onload = refresh; img.src = lt.drawing; }
@@ -43,36 +44,36 @@ export default {
     const ta = el('textarea', { maxlength: 300, placeholder: t('send.card.textPh'), style: { position: 'absolute', inset: 0, width: '100%', height: '100%', resize: 'none', border: 0, outline: 'none', padding: '9% 10%', background: 'var(--paper)', color: '#4a3a30', fontFamily: 'var(--font-letter)', lineHeight: 1.8, pointerEvents: 'auto' }, hidden: true,
       oninput: e => { update(s => { s.letter.text = e.target.value; }); count.textContent = t('send.card.limit', { n: e.target.value.length }); refresh(); } });
     ta.value = lt.text;
-    const pen = el('canvas', { width: 452, height: 280, hidden: true, style: { position: 'absolute', left: '6%', top: '54%', width: '88%', height: '40%', pointerEvents: 'auto', touchAction: 'none', borderRadius: '4px', outline: '2px dashed rgba(74,58,48,.25)' } });
-    const cx = pen.getContext('2d'); cx.lineWidth = 6; cx.lineCap = 'round'; cx.strokeStyle = '#4a3a30';
-    if (img) cx.drawImage(img, 0, 0, 452, 280);
+    const pen = el('canvas', { width: 512, height: 708, hidden: true, style: { position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'auto', touchAction: 'none' } });
+    const cx = pen.getContext('2d'); cx.lineWidth = 7; cx.lineCap = 'round'; cx.strokeStyle = '#4a3a30';
+    if (img) cx.drawImage(img, 0, 0, 512, 708);
     let down = false;
     const pos = e => { const r = pen.getBoundingClientRect(); return [(e.clientX - r.left) / r.width * pen.width, (e.clientY - r.top) / r.height * pen.height]; };
     pen.addEventListener('pointerdown', e => { down = true; pen.setPointerCapture(e.pointerId); cx.beginPath(); cx.moveTo(...pos(e)); });
     pen.addEventListener('pointermove', e => { if (down){ cx.lineTo(...pos(e)); cx.stroke(); } });
     pen.addEventListener('pointerup', () => { down = false; const url = pen.toDataURL(); update(s => { s.letter.drawing = url; }); img = new Image(); img.onload = refresh; img.src = url; });
-    over.append(ta, pen);
+    const chipsBox = el('div', { class: 'paper-chips' });
+    over.append(ta, pen, chipsBox);
     const mode = m => { ta.hidden = m !== 'text'; pen.hidden = m !== 'pen'; over.style.pointerEvents = m ? 'auto' : 'none'; if (m === 'text') ta.focus(); if (!m) refresh(); };
     const count = el('span', { class: 'count' }, t('send.card.limit', { n: lt.text.length }));
     const off3 = st.onTap(e => { if (st.pick(e, [letter.group])) mode(ta.hidden ? 'text' : null); });   // 종이를 누르면 쓰기
 
     // ---- 도구 줄: 마이크 / T / 펜 / 색 점들 / 확정 ----
     const paintPaper = () => { ctx.root.style.setProperty('--paper', paperColor()); refresh(); };
-    const dots = el('div', { class: 'swatches' });
-    const drawDots = () => dots.replaceChildren(...PAPER_COLORS.slice(0, 5).map(c => el('button', { class: lt.paper === c ? 'on' : '', style: { background: c }, 'aria-label': c,
+    const drawDots = () => chipsBox.replaceChildren(...PAPER_COLORS.slice(0, 5).map(c => el('button', { class: lt.paper === c ? 'on' : '', style: { background: c }, 'aria-label': c,
       onclick: () => { update(s => { s.letter.paper = c; }); drawDots(); paintPaper(); } })));
     const tool = (txt, label, fn) => el('button', { class: 'btn', 'aria-label': label, onclick: fn }, txt);
     const tools = el('div', { class: 'row wrap' },
       tool('🎙', t('send.card.tools.mic'), () => toast(t('send.card.micSoon'))),
       tool('T', t('send.card.tools.text'), () => mode('text')),
       tool('✎', t('send.card.tools.pen'), () => mode('pen')),
-      dots, el('span', { class: 'spacer' }), count,
+      el('span', { class: 'spacer' }), count,
       el('button', { class: 'btn primary', onclick: () => mode(null) }, t('common.confirm')));
     const to = el('input', { class: 'field', placeholder: t('send.card.toPh'), value: lt.to, oninput: e => update(s => { s.letter.to = e.target.value; }) });
     const rel = el('div', { class: 'tabs' }, ...['friend', 'love'].map(k => el('button', { class: lt.relation === k ? 'on' : '', onclick: e => { update(s => { s.letter.relation = k; }); [...rel.children].forEach(b => b.classList.toggle('on', b === e.target)); } }, t('send.card.relation.' + k))));
-    const giftBox = el('div', { hidden: !state.gift.has, style: { marginTop: '10px', animation: 'fade .35s' } }, giftSection(() => ctx.go('send-3-character')));
-    const yes = el('button', { class: 'btn' + (state.gift.has ? ' primary' : ''), onclick: () => { update(s => { s.gift.has = true; }); giftBox.hidden = false; yes.classList.add('primary'); no.classList.remove('primary'); sheet.classList.add('tall'); } }, '✓ ' + t('send.card.yes'));
-    const no = el('button', { class: 'btn' + (!state.gift.has ? ' primary' : ''), onclick: () => { update(s => { s.gift.has = false; }); giftBox.hidden = true; no.classList.add('primary'); yes.classList.remove('primary'); } }, '✗ ' + t('send.card.no'));
+    const giftBox = el('div', { hidden: true, style: { marginTop: '10px', animation: 'fade .35s' } }, giftSection(() => ctx.go('send-3-character')));
+    const yes = el('button', { class: 'btn' + (state.gift.has ? ' primary' : ''), onclick: () => { update(s => { s.gift.has = true; }); giftBox.hidden = false; yes.classList.add('primary'); no.classList.remove('primary'); sheet.classList.add('tall'); } }, '✓');
+    const no = el('button', { class: 'btn' + (!state.gift.has ? ' primary' : ''), onclick: () => { update(s => { s.gift.has = false; }); giftBox.hidden = true; no.classList.add('primary'); yes.classList.remove('primary'); } }, '✗');
     const sheet = L.addSheet([tools,
       el('div', { class: 'row', style: { marginTop: '8px' } }, el('b', {}, t('send.card.to')), to),
       el('div', { class: 'row', style: { justifyContent: 'space-between', margin: '10px 0 0' } }, el('span', {}, t('send.card.giftAsk')), el('div', { class: 'row' }, yes, no)),

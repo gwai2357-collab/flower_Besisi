@@ -14,8 +14,12 @@ export function layout(ctx, bubbleText){
     say(text){ b.innerHTML = text; if (!b.isConnected) top.append(b); },
     // 아래 패널을 붙이고, 3D가 패널이 가린 만큼 위로 올라오게 한다
     addSheet(children, { tall = false, grab = true } = {}){
+      // 손잡이를 누르면 패널이 완전히 내려가고(손잡이만 남음), 내려간 만큼 3D(fitable인 장면)가 커진다. tall로 시작한 패널은 크게/보통으로 바뀐다.
       sheetEl = el('div', { class: 'sheet' + (tall ? ' tall' : '') },
-        grab ? el('button', { class: 'grab', 'aria-label': 'panel', onclick: () => { sheetEl.classList.toggle('tall'); } }) : null, children);
+        grab ? el('button', { class: 'grab', 'aria-label': 'panel', onclick: () => {
+          if (tall) sheetEl.classList.toggle('tall');
+          else { sheetEl.classList.toggle('collapsed'); ctx.stage.setFit(sheetEl.classList.contains('collapsed') ? 1.3 : 1); }
+        } }) : null, children);
       ctx.root.append(sheetEl);
       ro = new ResizeObserver(() => ctx.stage.setInset(Math.max(0, sheetEl.offsetHeight - 24))); ro.observe(sheetEl);
       return sheetEl;

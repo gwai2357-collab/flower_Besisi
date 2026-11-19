@@ -22,12 +22,12 @@ export function letterCanvas({ text = '', paper = '#fbf7ee', drawing = null, hin
   x.fillStyle = paper; x.fillRect(0, 0, 512, 708);
   x.strokeStyle = 'rgba(120,100,80,.22)'; x.lineWidth = 6; x.strokeRect(16, 16, 480, 676);
   x.strokeStyle = 'rgba(150,130,110,.28)'; x.lineWidth = 2; x.beginPath(); x.moveTo(24, 354); x.lineTo(488, 354); x.stroke();   // 접힌 자국
-  if (drawing && drawing.complete) x.drawImage(drawing, 30, 380, 452, 280);
+  if (drawing && drawing.complete) x.drawImage(drawing, 0, 0, 512, 708);   // 낙서는 편지지 전체 영역에
   const body = text || hint;
   let size = 34, lines = [];
-  for (; size >= 14; size -= 2){ x.font = `${size}px "Nanum Myeongjo", "AppleMyungjo", Georgia, serif`; lines = wrapText(x, body, 410); if (lines.length * size * 1.75 <= (drawing ? 300 : 600)) break; }
+  for (; size >= 14; size -= 2){ x.font = `${size}px "Nanum Myeongjo", "AppleMyungjo", Georgia, serif`; lines = wrapText(x, body, 410); if (lines.length * size * 1.75 <= 600) break; }
   x.fillStyle = text ? '#4a3a30' : 'rgba(74,58,48,.35)'; x.textBaseline = 'top';
-  const lh = size * 1.75; let y = drawing ? 40 : Math.max(40, (708 - lines.length * lh) / 2);
+  const lh = size * 1.75; let y = Math.max(40, (708 - lines.length * lh) / 2);
   for (const l of lines){ x.fillText(l, 50, y); y += lh; }
   return c;
 }

@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { el, toast } from '../ui.js';
 import { t } from '../strings.js';
 import { layout } from './_kit.js';
-import { makeLetter } from '../scene3d/letter.js';
+import { makeLetter, CH } from '../scene3d/letter.js';
 import { state } from '../state.js';
 import { getData, senderName, rx } from './receive-kit.js';
 
@@ -18,6 +18,7 @@ export default {
     const letter = makeLetter({ text: lt.text || '', paper, drawing: null });
     // 그림 편지는 같은 기기에서만 보임(링크에 담기지 않음)
     if (state.letter.drawing){ const im = new Image(); im.onload = () => letter.setPaper({ text: lt.text || '', paper, drawing: im }); im.src = state.letter.drawing; }
+    letter.group.position.y = -CH / 2;
     const g = new THREE.Group(); g.add(letter.group); letter.open(0);
     st.show(g, { camera: [0, 0, 0.45], target: [0, 0, 0], minDistance: 0.1, controls: false, sway: false });
     const t0 = performance.now();

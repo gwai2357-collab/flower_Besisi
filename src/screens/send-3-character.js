@@ -12,8 +12,9 @@ export default {
   mount(ctx){
     const L = layout(ctx, t('send.character.bubble'));
     if (!state.character.look) update(s => { s.character.look = DEFAULT_LOOK(); });
-    const hold = () => ({ items: state.items, wrap: state.wrap });
-    const show = (obj, keep) => ctx.stage.show(obj, { ...CHAR_CAM, keepCamera: keep, minDistance: 1.2 });
+    const hold = () => ({ items: state.items, wrap: state.wrap, scale: 0.8 });   // 꽃다발은 크게(캐릭터 실험 v0처럼)
+    // 캐릭터는 살짝 아래로 내려 상반신 경계가 선택 바에 조금 가리게. 드래그·핀치줌으로 확대 가능
+    const show = (obj, keep) => ctx.stage.show(obj, { target: [0, 0.34, 0], camera: [0, 0.5, 2.0], keepCamera: keep, minDistance: 0.9 });
     const opts = el('div', { class: 'charopts' }), kinds = el('div', { class: 'seg wrap', style: { marginBottom: '8px' } });
     const mount = () => {
       const spec = state.character.look;

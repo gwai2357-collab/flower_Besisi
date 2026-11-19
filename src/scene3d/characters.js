@@ -1342,7 +1342,7 @@ export function makeCharacter(spec, { bouquet, renderBouquet } = {}){
   if (bouquet && renderBouquet){
     const FG = root.userData.F.children[0], B = FG.children[FG.children.length - 1];   // build가 마지막에 FG.add(B)
     B.traverse(o => o.geometry && o.geometry.dispose()); B.clear();
-    const bq = renderBouquet(bouquet); bq.scale.setScalar(0.5); bq.position.set(0, -0.18, 0); B.add(bq);
+    const bq = renderBouquet(bouquet); bq.scale.setScalar(bouquet.scale || 0.5); bq.position.set(0, -0.18, 0); B.add(bq);
   }
   root.userData.charAnim = t => animateChar(spec.k, root.userData, t);   // stage가 매 프레임 부름
   return root;

@@ -6,7 +6,7 @@ import { state, seedDemo } from './state.js';
 
 export function mountDev(stage){
   const panel = el('div', { id: 'devpanel' }, el('h3', {}, t('dev.title')));
-  const bg = el('input', { type: 'color' }); bg.value = '#d9829c';
+  const bg = el('input', { type: 'color' }); bg.value = '#bce1da';
   bg.oninput = () => { document.documentElement.style.setProperty('--bg', bg.value); stage.refreshBackground(); };
   panel.append(el('label', {}, t('dev.bg')), bg);
   const slider = (label, min, max, step, val, on) => {

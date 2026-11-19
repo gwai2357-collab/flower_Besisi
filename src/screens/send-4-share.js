@@ -16,15 +16,17 @@ export default {
     ];
     let v = 0;
     const label = el('div', { class: 'hint' });
-    const frame = el('div', { class: 'frame', style: { width: 'calc(100% - 2 * var(--gutter) - 90px)' } });
+    const frame = el('div', { class: 'frame' });
+    // 썸네일 박스 바깥의 3D는 가림막(액자의 큰 그림자)으로 잘려 나가고, 박스 밑에는 흰 박스 하나(링크 미리보기 카드 느낌). 안쪽 코드는 다른 세션에서 만들어 올 예정
     const show = n => {
       v = (n + variants.length) % variants.length; const o = variants[v];
       ctx.stage.show(charObj(state.character.look || DEFAULT_LOOK(), { items: state.items, wrap: state.wrap }), { camera: o.camera, target: o.target, y: o.y, minDistance: 0.6 });
       label.textContent = `${t('send.share.thumb')} · ${o.name}`;
     };
     // 3D가 보이는 빈 자리 한가운데에 3:2 액자, 양옆에 ◁ ▷
-    L.spacer.replaceWith(el('div', { class: 'spacer', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 var(--gutter)' } },
-      el('button', { class: 'iconbtn', onclick: () => show(v - 1) }, '◁'), frame, el('button', { class: 'iconbtn', onclick: () => show(v + 1) }, '▷')));
+    const arrow = (txt, d) => el('button', { class: 'iconbtn', style: { position: 'relative', zIndex: 2 }, onclick: () => show(v + d) }, txt);
+    L.spacer.replaceWith(el('div', { class: 'spacer', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', padding: '0 var(--gutter)' } },
+      arrow('◁', -1), el('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 } }, frame, el('div', { class: 'frame-caption' })), arrow('▷', 1)));
     show(0);
     const link = () => `${location.origin}${location.pathname}#r=${encodeGift()}`;
     const copy = async () => { await copyText(link()); toast(t('common.copied')); };

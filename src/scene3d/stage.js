@@ -17,7 +17,8 @@ export function createStage(host, opts = {}){
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(46, 1, 0.01, 50);
   const controls = new OrbitControls(camera, canvas);
-  Object.assign(controls, { enableDamping: true, enablePan: false, minDistance: 0.5, maxDistance: 5, maxPolarAngle: Math.PI * 0.55 });
+  Object.assign(controls, { enableDamping: true, dampingFactor: 0.06, enablePan: false, minDistance: 0.5, maxDistance: 5, maxPolarAngle: Math.PI * 0.55 });
+  controls.touches = { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_ROTATE };   // 한 손가락 드래그 = 돌리기, 두 손가락 = 핀치 확대
   scene.add(new THREE.HemisphereLight('#fff6f2', '#f0d0d8', 1.3));
   const fill = new THREE.DirectionalLight('#ffffff', 0.6); fill.position.set(0, 0.4, 2); scene.add(fill);
   const sun = new THREE.DirectionalLight('#fff4e6', 2.0); sun.position.set(1.2, 2.6, 1.4); scene.add(sun);
@@ -54,6 +55,7 @@ export function createStage(host, opts = {}){
   }
   new ResizeObserver(resize).observe(host); resize();
 
+  let fitNow = 1, fitTarget = 1;
   let content = null, contentOpts = {}, frozen = false, framesLeft = 0, listeners = [], t0 = performance.now();
   const clock = new THREE.Clock();
   function show(obj, o = {}){
@@ -63,6 +65,8 @@ export function createStage(host, opts = {}){
     controls.minDistance = o.minDistance ?? 0.5;
     if (!o.keepCamera){ const tg = o.target || [0, 0.6, 0], cam = o.camera || [0.25, 0.8, 2.15]; controls.target.set(...tg); camera.position.set(...cam); controls.update(); }
     controls.enabled = o.controls !== false;
+    controls.autoRotate = !!o.autoRotate; controls.autoRotateSpeed = o.autoRotate || 0;   // 저절로 도는 장면(진입·함께 모으기). 드래그해도 멈추지 않고, 놓으면 부드럽게 이어서 돈다
+    fitNow = fitTarget = 1;
     framesLeft = 3;
   }
   renderer.setAnimationLoop(() => {
@@ -70,6 +74,7 @@ export function createStage(host, opts = {}){
     if (frozen && framesLeft <= 0) return;
     framesLeft--;
     if (content && contentOpts.sway !== false){ content.rotation.z = Math.sin(t * 0.7) * 0.012; content.rotation.y = (contentOpts.spin ?? 0) + Math.sin(t * 0.25) * 0.05; }
+    if (content && contentOpts.fitable){ fitNow += (fitTarget - fitNow) * Math.min(1, dt * 6); content.scale.setScalar(fitNow); }   // 아래 패널을 내린 만큼 3D가 커짐
     const ud = content && content.userData;
     if (ud && ud.tagPivot){ ud.tagPivot.rotation.z = Math.sin(t * 1.4) * 0.16; ud.tagPivot.rotation.x = -0.1 + Math.sin(t * 1.1 + 0.6) * 0.08; }
     else if (ud && ud.noteMesh) ud.noteMesh.scale.setScalar(1 + Math.sin(t * 2.6) * 0.035);
@@ -100,8 +105,9 @@ export function createStage(host, opts = {}){
     onFrame(f){ listeners.push(f); return () => { listeners = listeners.filter(x => x !== f); }; },
     onTap(h){ tapHandlers.add(h); return () => tapHandlers.delete(h); },
     setInset(px){ inset = px; applyInset(); },
+    setFit(k){ fitTarget = k; framesLeft = 3; },
     refreshBackground(){
-      const c = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#d9829c';
+      const c = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#bce1da';
       scene.background = new THREE.Color(c); framesLeft = 3;
     },
     setPS1(o){ Object.assign(ps1, o, o.snap ? { snap: { ...ps1.snap, ...o.snap } } : {}); heightNow = ps1.height; for (const k in SNAP) SNAP[k].uSnap.value = ps1.on ? 1 : 0; sizePS1(); framesLeft = 3; },

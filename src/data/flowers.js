@@ -21,14 +21,21 @@ export const CATALOG = [
   { id: 'eucalyptus', name: '유칼립투스',    tab: 'foliage', type: 'eucalyptus', basic: true, dot: '#8fa89b', meaning: '추억, 새로운 시작' },
   { id: 'bori',       name: '보리사초',      tab: 'foliage', type: 'bori',       dot: '#9bb06a', meaning: '소박한 기쁨' },
 ];
+// 잠긴 꽃 자리(탭마다 10칸): 아직 3D가 없는 꽃 이름만 있는 자리. 회원가입 후 도감을 채우면 열리는 꽃을 미리 보여 줌.
+const LOCKED = {
+  flower1: ['작약', '프리지아', '수국', '라넌큘러스', '카네이션', '백합', '해바라기', '거베라', '아네모네', '스타티스'],
+  flower2: ['스토크', '리모니움', '왁스플라워', '스카비오사', '니겔라', '설유화', '조팝', '미스티블루', '캄파눌라', '꽃양귀비'],
+  foliage: ['루스커스', '레몬잎', '미리오', '자작나무잎', '아이비', '실버달러', '아스파라거스', '율마', '청지각', '네프롤레피스'],
+};
+for (const [tab, names] of Object.entries(LOCKED)) names.forEach((name, i) => CATALOG.push({ id: `soon-${tab}-${i}`, name, tab, type: null, dot: '#cfc8cb', meaning: '', soon: true }));
 export const byId = Object.fromEntries(CATALOG.map(f => [f.id, f]));
 
 // 오늘 꽃시장에 들어온 꽃: 날짜로 정해지는 3~4종(기본 꽃 제외), 그중 하나를 강조
 export function openToday(date = new Date(), owned = []){
   const key = date.getFullYear() * 10000 + (date.getMonth() + 1) * 100 + date.getDate();
   const rng = mulberry32(key);
-  const pool = CATALOG.filter(f => !f.basic && !f.pending);
+  const pool = CATALOG.filter(f => !f.basic && !f.pending && !f.soon);
   const pick = [...pool].sort(() => rng() - 0.5).slice(0, 3 + (key % 2));
   return { open: new Set([...pick.map(f => f.id), ...owned]), highlight: pick[0]?.id };
 }
-export const isOpen = (f, today) => f.basic || today.open.has(f.id);
+export const isOpen = (f, today) => !f.soon && (f.basic || today.open.has(f.id));

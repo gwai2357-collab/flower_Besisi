@@ -18,11 +18,11 @@ export default {
 
     const render3d = () => {
       const obj = bouquetObj(state.items, state.wrap);
-      ctx.stage.show(obj, { ...BOUQUET_CAM, keepCamera: !first }); first = false;
+      ctx.stage.show(obj, { ...BOUQUET_CAM, camera: [0.2, 0.72, 1.95], keepCamera: !first, fitable: true, minDistance: 0.7 }); first = false;   // 드래그·핀치줌으로 확대 가능. 패널을 내리면 fit으로 커짐
     };
     // 되돌리기 (말풍선 옆)
-    const undo = el('button', { class: 'btn', disabled: true, onclick: () => { const h = hist.pop(); if (h == null) return; update(s => { s.items = JSON.parse(h); }); undo.disabled = !hist.length; } }, '↶ ' + t('common.undo'));
-    L.top.append(undo);
+    const undo = el('button', { class: 'btn undo-float', 'aria-label': t('common.undo'), disabled: true, onclick: () => { const h = hist.pop(); if (h == null) return; update(s => { s.items = JSON.parse(h); }); undo.disabled = !hist.length; } }, '↶');
+    ctx.root.append(undo);   // 왼쪽 가운데 아이콘
 
     const actions = el('div', { class: 'row wrap' },
       el('button', { class: 'btn', onclick: () => { push(); clearFlowers(); } }, t('send.flowers.clear')),
@@ -47,11 +47,12 @@ export default {
       }
       const flowers = CATALOG.filter(f => f.tab === tab), hl = flowers.find(f => f.id === today.highlight);
       for (const f of [...flowers].sort((a, b) => (b === hl) - (a === hl))){
-        const open = isOpen(f, today), cls = (f === hl ? 'today ' : '') + (!open ? 'locked ' : '') + (f.pending ? 'pending' : '');
+        const open = isOpen(f, today), cls = (f === hl ? 'today ' : '') + (!open ? 'locked ' : '') + (f.pending ? 'pending' : '');   // soon: 아직 3D가 없는 잠긴 자리(회색+흰 그라디언트)
         const label = f === hl ? `${t('send.flowers.today')} · ${f.name}` : f.name;
-        list.append(chip(label, { dot: f.dot, cls, info: () => L.say(t('send.flowers.meaning', { 꽃: f.name, 뜻: f.meaning })),
-          onclick: () => open ? pickFlower(f) : toast(`${f.name} · ${t('send.flowers.lockedHint')}`) }));
+        list.append(chip(label, { dot: f.dot, cls, info: f.soon ? null : () => L.say(t('send.flowers.meaning', { 꽃: f.name, 뜻: f.meaning })),
+          onclick: () => f.soon ? toast(t('send.flowers.lockedNote')) : open ? pickFlower(f) : toast(`${f.name} · ${t('send.flowers.lockedHint')}`) }));
       }
+      list.append(el('p', { class: 'note', style: { width: '100%', margin: '6px 0 0' } }, t('send.flowers.lockedNote')));
     }
     const next = el('button', { class: 'btn big primary', style: { width: '100%', marginTop: '12px' }, onclick: () => state.items.length ? ctx.go('send-2-card') : toast(t('send.flowers.empty')) }, t('send.flowers.next'));
     L.addSheet([actions, tabBar, list, el('div', { class: 'row', style: { justifyContent: 'space-between', marginTop: '10px' } }, counter,

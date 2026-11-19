@@ -9,6 +9,8 @@ import { byId } from '../data/flowers.js';
 const demo = ids => ids.map((id, k) => ({ ...rollItem(byId[id].type), seed: 1000 + k * 37, flower: id }));
 export const DEMO_BOUQUET = demo(['roseRed', 'roseRed', 'lisianthus', 'daisy', 'marigold', 'asclepias', 'delphSpray', 'eucalyptus', 'eucalyptus', 'bori', 'eucalyptus']);
 export const DEMO_SINGLE = demo(['roseRed', 'eucalyptus', 'bori']);
+export const DEMO_B = demo(['daisy', 'daisy', 'marigold', 'lisianthus', 'asclepias', 'delphSpike', 'eucalyptus', 'bori']);
+export const DEMO_C = demo(['rose', 'rose', 'lisianthus', 'delphSpray', 'delphSpray', 'eucalyptus', 'eucalyptus', 'bori', 'bori']);
 
 export const bouquetObj = (items, wrap = 'paper') => renderBouquet({ items, wrap });
 export const BOUQUET_CAM = { target: [0, 0.62, 0], camera: [0.25, 0.8, 2.15] };
