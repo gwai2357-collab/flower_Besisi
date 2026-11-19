@@ -116,3 +116,6 @@ html { overflow-x: hidden; max-width: 100%; }
 
 /* 넓은 화면(컴퓨터)에서도 휴대폰과 같은 모습: 3D 무대도 UI와 같은 폭(최대 520px) 한 줄로 가운데에 둠 */
 #stage3d { left: 50%; right: auto; width: min(100%, 520px); transform: translateX(-50%); }
+
+/* 3D 위에 덮인 틀(#app)이 터치를 가로채서 드래그·핀치가 안 되던 문제: 틀은 통과시키고, 그 안의 실제 UI(버튼·패널·말풍선)만 터치를 받음 */
+#app { pointer-events: none; }
