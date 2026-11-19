@@ -1,6 +1,6 @@
 // S4 보내기: 카톡 공유 썸네일 템플릿(A 빼꼼 / B 얼굴 가까이)을 액자 안에서 ◁ ▷ 로 넘겨 보고, 링크 복사 / 공유하기 / QR / 의견 보내기.
 // 서프라이즈를 위해 꽃 전체는 보이지 않게 한다.
-import { el, copyText, toast } from '../ui.js';
+import { el, copyText, toast, sparkles } from '../ui.js';
 import { t } from '../strings.js';
 import { layout } from './_kit.js';
 import { charObj, DEFAULT_LOOK } from '../scene3d/previews.js';
@@ -28,6 +28,9 @@ export default {
     L.spacer.replaceWith(el('div', { class: 'spacer', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', padding: '0 var(--gutter)' } },
       arrow('◁', -1), el('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 } }, frame, el('div', { class: 'frame-caption' })), arrow('▷', 1)));
     show(0);
+    // 짜잔! 마지막 화면의 임팩트: 썸네일 액자가 톡 튀어나오고 반짝이가 터짐
+    frame.parentElement.classList.add('pop'); L.bubbleEl.classList.add('pop');
+    setTimeout(() => sparkles(innerWidth / 2, innerHeight * 0.36), 250); setTimeout(() => sparkles(innerWidth / 2, innerHeight * 0.36, 20), 900);
     const link = () => `${location.origin}${location.pathname}#r=${encodeGift()}`;
     const copy = async () => { await copyText(link()); toast(t('common.copied')); };
     const share = async () => { if (navigator.share){ try { await navigator.share({ title: t('app.name'), url: link() }); } catch (e) {} } else await copy(); };

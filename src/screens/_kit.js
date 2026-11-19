@@ -2,29 +2,38 @@
 import { el } from '../ui.js';
 import { bubble } from '../scene3d/cloud.js';
 
-// 반환: { top, say(text), spacer, addSheet(children, {tall}) }
+// 반환: { top, say(text), spacer, addSheet(children, opts), float(el) }
 export function layout(ctx, bubbleText){
   const b = bubble(bubbleText || '');
   const top = el('div', { class: 'row', style: { justifyContent: 'center', padding: '4px var(--gutter) 0', minHeight: '0' } }, bubbleText ? b : null);
   const spacer = el('div', { class: 'spacer' });
   ctx.root.append(top, spacer);
-  let sheetEl = null, ro = null;
+  let sheetEl = null, ro = null, offTap = null, floats = [];
+  const placeFloats = () => floats.forEach(f => { f.style.bottom = (sheetEl ? sheetEl.offsetHeight : 0) + 6 + 'px'; });
   return {
     top, spacer, bubbleEl: b,
     say(text){ b.innerHTML = text; if (!b.isConnected) top.append(b); },
-    // 아래 패널을 붙이고, 3D가 패널이 가린 만큼 위로 올라오게 한다
-    addSheet(children, { tall = false, grab = true } = {}){
-      // 손잡이를 누르면 패널이 완전히 내려가고(손잡이만 남음), 내려간 만큼 3D(fitable인 장면)가 커진다. tall로 시작한 패널은 크게/보통으로 바뀐다.
-      sheetEl = el('div', { class: 'sheet' + (tall ? ' tall' : '') },
-        grab ? el('button', { class: 'grab', 'aria-label': 'panel', onclick: () => {
-          if (tall) sheetEl.classList.toggle('tall');
-          else { sheetEl.classList.toggle('collapsed'); ctx.stage.setFit(sheetEl.classList.contains('collapsed') ? 1.3 : 1); }
-        } }) : null, children);
+    // 패널 위 왼쪽에 붙어서 패널과 함께 위아래로 움직이는 요소(되돌리기 아이콘 등)
+    float(node){ node.classList.add('sheet-float'); ctx.root.append(node); floats.push(node); placeFloats(); return node; },
+    // 아래 패널을 붙인다. 3D는 패널이 가린 만큼 위로 올라온다.
+    // 패널 내리기: 손잡이를 누르거나 아래로 드래그하거나, (tapCollapse) 3D를 탭하면 완전히 내려가고(손잡이만 남음) 3D(fitable)가 커진다. 손잡이를 위로 끌거나 누르면 다시 올라온다.
+    addSheet(children, { tall = false, grab = true, tapCollapse = true } = {}){
+      const setCollapsed = c => { sheetEl.classList.toggle('collapsed', c); ctx.stage.setFit(c ? 1.3 : 1); };
+      const grabBtn = grab ? el('button', { class: 'grab', 'aria-label': 'panel' }) : null;
+      sheetEl = el('div', { class: 'sheet' + (tall ? ' tall' : '') }, grabBtn, children);
+      if (grabBtn){
+        let y0 = null, moved = false;
+        grabBtn.addEventListener('pointerdown', e => { y0 = e.clientY; moved = false; grabBtn.setPointerCapture(e.pointerId); });
+        grabBtn.addEventListener('pointermove', e => { if (y0 == null) return; const dy = e.clientY - y0; if (Math.abs(dy) > 14) moved = true;
+          if (dy > 24) { if (tall) sheetEl.classList.remove('tall'); else setCollapsed(true); y0 = e.clientY; } else if (dy < -24) { if (tall) sheetEl.classList.add('tall'); else setCollapsed(false); y0 = e.clientY; } });
+        grabBtn.addEventListener('pointerup', () => { if (!moved){ if (tall) sheetEl.classList.toggle('tall'); else setCollapsed(!sheetEl.classList.contains('collapsed')); } y0 = null; });
+      }
+      if (tapCollapse && grab && !tall) offTap = ctx.stage.onTap(() => { if (!sheetEl.classList.contains('collapsed')) setCollapsed(true); });
       ctx.root.append(sheetEl);
-      ro = new ResizeObserver(() => ctx.stage.setInset(Math.max(0, sheetEl.offsetHeight - 24))); ro.observe(sheetEl);
+      ro = new ResizeObserver(() => { ctx.stage.setInset(Math.max(0, sheetEl.offsetHeight - 24)); placeFloats(); }); ro.observe(sheetEl);
       return sheetEl;
     },
-    dispose(){ ro?.disconnect(); ctx.stage.setInset(0); },
+    dispose(){ ro?.disconnect(); offTap?.(); ctx.stage.setInset(0); },
   };
 }
 

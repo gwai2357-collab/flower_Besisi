@@ -26,3 +26,15 @@ export async function copyText(text){
     let ok = false; try { ok = document.execCommand('copy'); } catch (e2) {} ta.remove(); return ok;
   }
 }
+
+// 짜잔! 효과: 화면 가운데에서 도트 별·네모 조각이 사방으로 튀어 오르며 사라짐 (색은 파스텔)
+export function sparkles(cx = innerWidth / 2, cy = innerHeight * 0.35, n = 36){
+  const cols = ['#ffe27a', '#ffffff', '#ff9fb8', '#9fd4ff', '#b9f0c4', '#d9b8ff'];
+  for (let i = 0; i < n; i++){
+    const e = el('i', { class: 'spark', style: { left: cx + 'px', top: cy + 'px', background: cols[i % cols.length], clipPath: i % 3 ? 'none' : 'polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%)', width: (6 + (i % 4) * 3) + 'px', height: (6 + (i % 4) * 3) + 'px' } });
+    document.body.append(e);
+    const a = (i / n) * Math.PI * 2 + Math.random() * 0.4, d = 90 + Math.random() * 150;
+    e.animate([{ transform: 'translate(0,0) scale(1)', opacity: 1 }, { transform: `translate(${Math.cos(a) * d}px, ${Math.sin(a) * d - 40}px) scale(.4) rotate(${(Math.random() - .5) * 240}deg)`, opacity: 0 }],
+      { duration: 900 + Math.random() * 700, easing: 'cubic-bezier(.15,.8,.3,1)', delay: Math.random() * 150 }).onfinish = () => e.remove();
+  }
+}

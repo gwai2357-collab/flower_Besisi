@@ -45,7 +45,7 @@ export default {
       nickname: '닉네임', nicknamePh: '받는 사람에게 보여요', basic: '기본', random: '랜덤', confirm: '확정', confirmed: '이 캐릭터로 정했어요', save: '이미지로 저장', skipHint: '건너뛰면 랜덤 캐릭터가 건네요', next: '다음',
     },
     share: {
-      bubble: '다 됐어요! 링크로 마음을 전해요', thumb: '카톡 공유 모습', thumbA: '빼꼼', thumbB: '얼굴 가까이', thumbNote: '꽃 전체는 가려서 열기 전의 두근거림을 지켜요',
+      bubble: '짜잔! 다 됐어요!<br>링크로 마음을 전해요', thumb: '카톡 공유 모습', thumbA: '빼꼼', thumbB: '얼굴 가까이', thumbNote: '꽃 전체는 가려서 열기 전의 두근거림을 지켜요',
       copyLink: '링크 복사', share: '공유하기', qr: '깜짝 선물로 QR 만들기', qrSub: '와이파이·상품권처럼 꾸밀 수 있어요!', qrSoon: 'QR 꾸미기는 다음 단계에서 만들어요 (가상의 디자인만 써요)',
     },
   },

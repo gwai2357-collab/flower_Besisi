@@ -11,10 +11,12 @@ export default {
   id: 'send-0-intro', flow: 'send', title: '시작',
   mount(ctx){
     const st = ctx.stage, THREE = st.THREE, L = layout(ctx, t('send.intro.bubble'));
+    // 꽃을 훨씬 크게, 조금 아래로: 위아래가 조금 잘려도 꽃 머리가 크게 보이게 가까이서 비춤
+    const BIG = { target: [0, 0.8, 0], camera: [0.1, 0.8, 1.35] };
     // 미리보기 목록: 만들 때마다 새로 짓는 함수들
     const scenes = [
-      () => ({ obj: bouquetObj(DEMO_BOUQUET), cam: BOUQUET_CAM }),
-      () => ({ obj: bouquetObj(DEMO_B), cam: BOUQUET_CAM }),
+      () => ({ obj: bouquetObj(DEMO_BOUQUET), cam: BIG }),
+      () => ({ obj: bouquetObj(DEMO_B), cam: BIG }),
       () => { const g = new THREE.Group(), b = bouquetObj(DEMO_C), p = parcelObj(0.2); b.position.x = -0.12; p.position.set(0.5, 0.03, 0.35); p.rotation.y = -0.5; g.add(b, p); return { obj: g, cam: { target: [0.12, 0.6, 0], camera: [0.3, 0.8, 2.2] } }; },
       () => ({ obj: bouquetObj(DEMO_SINGLE, 'kraft'), cam: { target: [0, 0.5, 0], camera: [0.1, 0.6, 1.3] } }),
       () => ({ obj: charObj(Math.random() < 0.5 ? DEFAULT_LOOK() : { ...randomSpec(), pose: 1 }, { items: DEMO_SINGLE, wrap: 'kraft' }), cam: CHAR_CAM }),

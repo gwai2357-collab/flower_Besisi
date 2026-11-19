@@ -19,9 +19,11 @@ export default {
     const parcel = parcelObj(0.075); parcel.position.set(0.085, -0.1, -0.08); parcel.rotation.set(0.5, -0.5, 0.25);
     letter.group.position.y = -CH / 2;   // 펼친 편지는 [-CH/2, 3CH/2] 구간이라 가운데(0)에 오도록 내림
     const sheetG = new THREE.Group(); sheetG.add(letter.group); group.add(parcel, sheetG);
-    st.show(group, { fitable: true, camera: [0, 0.0, 0.38], target: [0, 0.0, 0], minDistance: 0.1, controls: false, sway: false, y: 0.0 });
+    st.setPS1({ height: 480 });   // 편지 글씨가 잘 보이게 이 화면만 PS1 효과(해상도 낮춤)를 줄임
+    st.show(group, { fitable: true, camera: [0, 0.037, 0.43], target: [0, 0.037, 0], minDistance: 0.1, controls: false, sway: false, y: 0.0 });
     let img = null;
-    const refresh = () => letter.setPaper({ text: lt.text, paper: paperColor(), drawing: img, hint: t('send.card.textPh') });
+    let penMode = false;   // 펜 모드에서는 3D 편지지에 그림을 빼고(겹쳐 보이는 옛 그림 방지) 위에 얹은 그리기 칸만 보임
+    const refresh = () => letter.setPaper({ text: lt.text, paper: paperColor(), drawing: penMode ? null : img, hint: t('send.card.textPh') });
     if (lt.drawing){ img = new Image(); img.onload = refresh; img.src = lt.drawing; }
     refresh();
 
@@ -54,7 +56,9 @@ export default {
     pen.addEventListener('pointerup', () => { down = false; const url = pen.toDataURL(); update(s => { s.letter.drawing = url; }); img = new Image(); img.onload = refresh; img.src = url; });
     const chipsBox = el('div', { class: 'paper-chips' });
     over.append(ta, pen, chipsBox);
-    const mode = m => { ta.hidden = m !== 'text'; pen.hidden = m !== 'pen'; over.style.pointerEvents = m ? 'auto' : 'none'; if (m === 'text') ta.focus(); if (!m) refresh(); };
+    const clearBtn = el('button', { class: 'btn', hidden: true, style: { position: 'absolute', right: '4%', top: '3%', pointerEvents: 'auto', padding: '3px 8px' }, onclick: () => { cx.clearRect(0, 0, 512, 708); img = null; update(s => { s.letter.drawing = null; }); } }, '지우기');
+    over.append(clearBtn);
+    const mode = m => { penMode = m === 'pen'; ta.hidden = m !== 'text'; pen.hidden = m !== 'pen'; clearBtn.hidden = m !== 'pen'; over.style.pointerEvents = m ? 'auto' : 'none'; L.bubbleEl.style.visibility = m ? 'hidden' : ''; if (m === 'text') ta.focus(); refresh(); };
     const count = el('span', { class: 'count' }, t('send.card.limit', { n: lt.text.length }));
     const off3 = st.onTap(e => { if (st.pick(e, [letter.group])) mode(ta.hidden ? 'text' : null); });   // 종이를 누르면 쓰기
 
@@ -63,22 +67,22 @@ export default {
     const drawDots = () => chipsBox.replaceChildren(...PAPER_COLORS.slice(0, 5).map(c => el('button', { class: lt.paper === c ? 'on' : '', style: { background: c }, 'aria-label': c,
       onclick: () => { update(s => { s.letter.paper = c; }); drawDots(); paintPaper(); } })));
     const tool = (txt, label, fn) => el('button', { class: 'btn', 'aria-label': label, onclick: fn }, txt);
+    const confirmBtn = el('button', { class: 'btn primary', disabled: true, onclick: () => { mode(null); ctx.go('send-3-character'); } }, t('common.confirm'));   // 아래 선물 유무(✓/✗)를 고르면 눌러지고, 누르면 다음으로
     const tools = el('div', { class: 'row wrap' },
       tool('🎙', t('send.card.tools.mic'), () => toast(t('send.card.micSoon'))),
       tool('T', t('send.card.tools.text'), () => mode('text')),
       tool('✎', t('send.card.tools.pen'), () => mode('pen')),
       el('span', { class: 'spacer' }), count,
-      el('button', { class: 'btn primary', onclick: () => mode(null) }, t('common.confirm')));
+      confirmBtn);
     const to = el('input', { class: 'field', placeholder: t('send.card.toPh'), value: lt.to, oninput: e => update(s => { s.letter.to = e.target.value; }) });
     const rel = el('div', { class: 'tabs' }, ...['friend', 'love'].map(k => el('button', { class: lt.relation === k ? 'on' : '', onclick: e => { update(s => { s.letter.relation = k; }); [...rel.children].forEach(b => b.classList.toggle('on', b === e.target)); } }, t('send.card.relation.' + k))));
     const giftBox = el('div', { hidden: true, style: { marginTop: '10px', animation: 'fade .35s' } }, giftSection(() => ctx.go('send-3-character')));
-    const yes = el('button', { class: 'btn' + (state.gift.has ? ' primary' : ''), onclick: () => { update(s => { s.gift.has = true; }); giftBox.hidden = false; yes.classList.add('primary'); no.classList.remove('primary'); sheet.classList.add('tall'); } }, '✓');
-    const no = el('button', { class: 'btn' + (!state.gift.has ? ' primary' : ''), onclick: () => { update(s => { s.gift.has = false; }); giftBox.hidden = true; no.classList.add('primary'); yes.classList.remove('primary'); } }, '✗');
+    const yes = el('button', { class: 'btn' + (state.gift.has ? ' primary' : ''), onclick: () => { update(s => { s.gift.has = true; }); confirmBtn.disabled = false; giftBox.hidden = false; yes.classList.add('primary'); no.classList.remove('primary'); sheet.classList.add('tall'); } }, '✓');
+    const no = el('button', { class: 'btn' + (!state.gift.has ? ' primary' : ''), onclick: () => { update(s => { s.gift.has = false; }); confirmBtn.disabled = false; giftBox.hidden = true; no.classList.add('primary'); yes.classList.remove('primary'); } }, '✗');
     const sheet = L.addSheet([tools,
       el('div', { class: 'row', style: { marginTop: '8px' } }, el('b', {}, t('send.card.to')), to),
       el('div', { class: 'row', style: { justifyContent: 'space-between', margin: '10px 0 0' } }, el('span', {}, t('send.card.giftAsk')), el('div', { class: 'row' }, yes, no)),
-      giftBox, rel,
-      el('button', { class: 'btn big primary', style: { width: '100%', marginTop: '10px' }, onclick: () => ctx.go('send-3-character') }, t('send.card.next'))]);
+      giftBox, rel], { tapCollapse: false });   // 종이를 누르면 글쓰기가 열리므로 3D 탭으로는 패널을 내리지 않음(손잡이 누르기·드래그로만)
     drawDots(); paintPaper();
 
     // ---- 기울기 센서(없으면 포인터 움직임으로 대신)로 편지지를 은은하게 흔들기 ----
@@ -87,6 +91,6 @@ export default {
     const move = e => { tx = (e.clientX / innerWidth - 0.5) * 1.2; ty = (e.clientY / innerHeight - 0.5) * 1.2; };
     window.addEventListener('deviceorientation', tilt); window.addEventListener('pointermove', move);
     const off2 = st.onFrame((dt, tm) => { sheetG.rotation.y += (tx * 0.22 - sheetG.rotation.y) * 0.1; sheetG.rotation.x += (ty * 0.14 - sheetG.rotation.x) * 0.1; parcel.rotation.z = 0.25 + Math.sin(tm * 0.8) * 0.03; });
-    return () => { off(); off2(); off3(); window.removeEventListener('deviceorientation', tilt); window.removeEventListener('pointermove', move); over.remove(); letter.dispose(); L.dispose(); };
+    return () => { st.setPS1({ height: 300 }); off(); off2(); off3(); window.removeEventListener('deviceorientation', tilt); window.removeEventListener('pointermove', move); over.remove(); letter.dispose(); L.dispose(); };
   },
 };

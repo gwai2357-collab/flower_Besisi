@@ -44,7 +44,7 @@ tail = '''
 // ================= 바깥으로 내보내는 부분 =================
 export { build, PALETTE, NAMES, ACC, specs as SPECS, POSES };
 // 꽃망울에서 고를 수 있는 6종 (핸드오프의 "캐릭터 6종")
-export const SIX = ['cat', 'dog', 'bear', 'rabbit', 'fox', 'human'];
+export const SIX = ['cat', 'dog', 'bear', 'rabbit', 'fox', 'human', 'hamster', 'bird', 'dino', 'robot', 'elephant', 'giraffe'];   // 처음 6종 + 캐릭터 실험 v0에서 6종 더
 export const newSpec = (k, over = {}) => ({ ...JSON.parse(JSON.stringify(specs[k])), acc: {}, accC: {}, hold: 2, pose: 0, ...over });
 export function randomSpec(){
   const k = SIX[Math.floor(Math.random() * SIX.length)], pal = PALETTE[k], pick = a => Math.floor(Math.random() * a.length);

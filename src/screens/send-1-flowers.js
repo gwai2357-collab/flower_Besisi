@@ -22,7 +22,7 @@ export default {
     };
     // 되돌리기 (말풍선 옆)
     const undo = el('button', { class: 'btn undo-float', 'aria-label': t('common.undo'), disabled: true, onclick: () => { const h = hist.pop(); if (h == null) return; update(s => { s.items = JSON.parse(h); }); undo.disabled = !hist.length; } }, '↶');
-    ctx.root.append(undo);   // 왼쪽 가운데 아이콘
+    L.float(undo);   // 패널 바로 위 왼쪽 (패널과 함께 움직임)
 
     const actions = el('div', { class: 'row wrap' },
       el('button', { class: 'btn', onclick: () => { push(); clearFlowers(); } }, t('send.flowers.clear')),

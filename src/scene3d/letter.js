@@ -42,8 +42,8 @@ export function makeLetter(initial = {}){
   letterCanvas(initial, cv);
   const top = tex.clone(); top.repeat.set(1, 0.5); top.offset.set(0, 0.5); top.needsUpdate = true;
   const bot = tex.clone(); bot.repeat.set(1, 0.5); bot.offset.set(0, 0); bot.needsUpdate = true;
-  const mat = map => snappable(new THREE.MeshBasicMaterial({ map, side: THREE.FrontSide }), SNAP.parcel);
-  const cover = snappable(new THREE.MeshBasicMaterial({ color: '#fbf7ee' }), SNAP.parcel);
+  const mat = map => snappable(new THREE.MeshBasicMaterial({ map, side: THREE.FrontSide }), SNAP.gift);   // 꼭짓점 흔들림은 약한 쪽(선물 820)으로: 글씨가 잘 보이게
+  const cover = snappable(new THREE.MeshBasicMaterial({ color: '#fbf7ee' }), SNAP.gift);
   const g = new THREE.Group();
   const inside = new THREE.Mesh(new THREE.PlaneGeometry(CW, CH), mat(bot)); g.add(inside);                        // 아래 절반(안쪽 면)
   const pivot = new THREE.Group(); pivot.position.set(0, CH / 2, 0.0008); g.add(pivot);                            // 위쪽 모서리가 경첩
