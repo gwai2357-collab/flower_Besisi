@@ -27,7 +27,7 @@ export default {
     // 마감: 일 단위 ▲▼. 시·분은 만든 시각 기준(지금 + n일)으로 분 단위까지 표시
     const born = new Date();
     const deadline = el('div', { class: 'count', style: { textAlign: 'center' } }), title = el('div', { style: { textAlign: 'center', fontWeight: 600, margin: '8px 0' } });
-    const dayOut = el('b', { style: { minWidth: '40px', textAlign: 'center', fontSize: '16px' } });
+    const dayOut = el('b', { style: { minWidth: '40px', textAlign: 'center', fontSize: 'calc(16px * var(--fs))' } });
     const paint = () => {
       const end = new Date(born.getTime() + state.collect.days * 864e5);
       dayOut.textContent = state.collect.days + '일';

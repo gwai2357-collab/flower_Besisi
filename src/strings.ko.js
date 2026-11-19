@@ -61,5 +61,5 @@ export default {
     box: { tabs: { bouquet: '꽃다발', book: '도감', wall: '포토박스 벽' }, again: '다시 받아 보기', detail: '다발 자세히 보기', book: '{total}종 중 {n}종 모았어요!', meaning: '이 꽃의 꽃말은 {뜻}예요', wallEmpty: '아직 찍은 스냅이 없어요', date: '받은 날' },
     soon: '이 화면은 다음 단계에서 만들어요',
   },
-  dev: { remote: '화면 이동 리모콘', send: '보내기', receive: '받기', panel: '조절 패널', title: '개발 패널', bg: '배경색', res: 'PS1 화면 해상도', snapBouquet: '꽃다발 흔들림', snapParcel: '소포 흔들림', snapGift: '선물 흔들림', jump: '화면 건너뛰기' },
+  dev: { fs: '글자 크기 배율', remote: '화면 이동 리모콘', send: '보내기', receive: '받기', panel: '조절 패널', title: '개발 패널', bg: '배경색', res: 'PS1 화면 해상도', snapBouquet: '꽃다발 흔들림', snapParcel: '소포 흔들림', snapGift: '선물 흔들림', jump: '화면 건너뛰기' },
 };

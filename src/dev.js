@@ -14,6 +14,7 @@ export function mountDev(stage){
     inp.oninput = () => { out.textContent = inp.value; on(+inp.value); };
     panel.append(el('label', {}, el('span', {}, label), out), inp);
   };
+  slider(t('dev.fs'), 0.8, 2, 0.05, 1.25, v => document.documentElement.style.setProperty('--fs', v));
   slider(t('dev.res'), 100, 600, 10, stage.ps1.height, v => stage.setPS1({ height: v }));
   slider(t('dev.snapBouquet'), 120, 1200, 10, stage.ps1.snap.bouquet, v => stage.setPS1({ snap: { bouquet: v } }));
   slider(t('dev.snapParcel'), 120, 1200, 10, stage.ps1.snap.parcel, v => stage.setPS1({ snap: { parcel: v } }));

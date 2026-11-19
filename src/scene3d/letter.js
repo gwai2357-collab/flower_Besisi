@@ -24,8 +24,11 @@ export function letterCanvas({ text = '', paper = '#fbf7ee', drawing = null, hin
   x.strokeStyle = 'rgba(150,130,110,.28)'; x.lineWidth = 2; x.beginPath(); x.moveTo(24, 354); x.lineTo(488, 354); x.stroke();   // 접힌 자국
   if (drawing && drawing.complete) x.drawImage(drawing, 0, 0, 512, 708);   // 낙서는 편지지 전체 영역에
   const body = text || hint;
-  let size = 34, lines = [];
-  for (; size >= 14; size -= 2){ x.font = `${size}px "Nanum Myeongjo", "AppleMyungjo", Georgia, serif`; lines = wrapText(x, body, 410); if (lines.length * size * 1.75 <= 600) break; }
+  let size = 32, lines = [];
+  for (; size >= 16; size -= 8){   // 도트 폰트는 16의 배수에서 또렷함
+    x.font = `${size}px "DOSSaemmul", "Nanum Myeongjo", "AppleMyungjo", Georgia, serif`; lines = wrapText(x, body, 410);
+    if (lines.length * size * 1.75 <= 600) break;
+  }
   x.fillStyle = text ? '#4a3a30' : 'rgba(74,58,48,.35)'; x.textBaseline = 'top';
   const lh = size * 1.75; let y = Math.max(40, (708 - lines.length * lh) / 2);
   for (const l of lines){ x.fillText(l, 50, y); y += lh; }
@@ -46,10 +49,13 @@ export function makeLetter(initial = {}){
   const pivot = new THREE.Group(); pivot.position.set(0, CH / 2, 0.0008); g.add(pivot);                            // 위쪽 모서리가 경첩
   const front = new THREE.Mesh(new THREE.PlaneGeometry(CW, CH), cover); front.position.y = -CH / 2; pivot.add(front);   // 표지(접혔을 때 겉)
   const back = new THREE.Mesh(new THREE.PlaneGeometry(CW, CH), mat(top)); back.position.set(0, -CH / 2, -0.0004); back.rotation.x = Math.PI; pivot.add(back);   // 표지 뒷면 = 위 절반
+  // 폰트가 다 불러와진 뒤에 한 번 더 그림 (처음에는 대체 글꼴로 그려질 수 있음)
+  let cur = initial;
+  document.fonts?.load('32px "DOSSaemmul"').then(() => { draw(cur); top.needsUpdate = true; bot.needsUpdate = true; });
   const api = {
     group: g,
     open(k){ pivot.rotation.x = -Math.PI * Math.max(0, Math.min(1, k)); },
-    setPaper(o){ draw(o); top.needsUpdate = true; bot.needsUpdate = true; },
+    setPaper(o){ cur = o; draw(o); top.needsUpdate = true; bot.needsUpdate = true; },
     dispose(){ g.traverse(o => o.geometry && o.geometry.dispose()); tex.dispose(); top.dispose(); bot.dispose(); },
   };
   api.open(1);

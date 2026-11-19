@@ -1,9 +1,9 @@
 /* theme.css 위에 얹는 부품 모양: 캐릭터 옵션 패널, 설정 아이콘 구름, 공유 액자. 색·둥글기는 theme.css의 변수만 쓴다. */
 
 /* 캐릭터 옵션 패널 (캐릭터 실험 v0의 탭·칩·슬라이더를 그대로 쓰는 곳) */
-.charopts .lbl { font-size: 12px; color: var(--muted); margin: 12px 0 6px; }
+.charopts .lbl { font-size: calc(12px * var(--fs)); color: var(--muted); margin: 12px 0 6px; }
 .charopts .seg { display: flex; background: #f1e4e8; border-radius: 10px; padding: 3px; gap: 2px; }
-.charopts .seg button { flex: 1; border: 0; background: transparent; padding: 8px 0; border-radius: 8px; font-size: 13px; color: var(--muted); }
+.charopts .seg button { flex: 1; border: 0; background: transparent; padding: 8px 0; border-radius: 8px; font-size: calc(13px * var(--fs)); color: var(--muted); }
 .charopts .seg.wrap { flex-wrap: wrap; }
 .charopts .seg.wrap button { flex: 1 0 23%; }
 .charopts .seg button.on { background: #fff; color: var(--ink); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
@@ -12,10 +12,10 @@
 .charopts .swatches button { width: 32px; height: 32px; border-radius: 50%; border: 2px solid rgba(0,0,0,.12); padding: 0; }
 .charopts .swatches button.on { border: 3px solid var(--ink); }
 .charopts .chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.charopts .chips button { padding: 7px 11px; border-radius: 999px; border: 1px solid var(--chip-line); background: #fff; font-size: 13px; color: var(--ink); }
+.charopts .chips button { padding: 7px 11px; border-radius: 999px; border: 1px solid var(--chip-line); background: #fff; font-size: calc(13px * var(--fs)); color: var(--ink); }
 .charopts .chips button.on { background: var(--ink); color: #fff; border-color: var(--ink); }
 .charopts .row { display: block; margin: 10px 0; }
-.charopts .row label { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; }
+.charopts .row label { display: flex; justify-content: space-between; font-size: calc(13px * var(--fs)); margin-bottom: 5px; }
 .charopts .row label span { color: var(--muted); }
 .charopts .wideBtn, .charopts #reshuffle { width: 100%; margin-top: 8px; padding: 9px; border-radius: 10px; border: 1px solid var(--chip-line); background: #fff; }
 
@@ -24,17 +24,17 @@
 
 /* 설정 아이콘 묶음 (스케치: ▶ ♪ ◎ 가 한 구름 안에) */
 .iconcloud { display: flex; gap: 2px; padding: 6px 14px; background-size: 100% 100%; image-rendering: pixelated; }
-.iconcloud button { border: 0; background: none; font-size: 15px; padding: 2px 5px; color: var(--ink); }
+.iconcloud button { border: 0; background: none; font-size: calc(15px * var(--fs)); padding: 2px 5px; color: var(--ink); }
 .iconcloud button.off { opacity: .4; }
 
 /* 공유 썸네일 액자 (S4) */
 .frame { margin: 0 auto; position: relative; border: 3px solid var(--ink); border-radius: 6px; aspect-ratio: 3 / 2; pointer-events: none; }
 
 /* 개발용 이동 리모콘 (?dev=1) */
-#devremote { position: fixed; left: 6px; top: calc(env(safe-area-inset-top) + 96px); z-index: 60; width: 30px; height: 30px; border-radius: 50%; border: 0; background: rgba(43,29,34,.55); color: #fff; font-size: 15px; line-height: 1; padding: 0; }
-#devmenu { position: fixed; left: 6px; top: calc(env(safe-area-inset-top) + 132px); z-index: 60; width: 150px; max-height: calc(var(--vh) * 70); overflow-y: auto; background: rgba(255,255,255,.96); border-radius: 12px; padding: 8px; box-shadow: 0 6px 24px rgba(0,0,0,.2); display: flex; flex-direction: column; gap: 3px; font-size: 12px; }
+#devremote { position: fixed; left: 6px; top: calc(env(safe-area-inset-top) + 96px); z-index: 60; width: 30px; height: 30px; border-radius: 50%; border: 0; background: rgba(43,29,34,.55); color: #fff; font-size: calc(15px * var(--fs)); line-height: 1; padding: 0; }
+#devmenu { position: fixed; left: 6px; top: calc(env(safe-area-inset-top) + 132px); z-index: 60; width: 150px; max-height: calc(var(--vh) * 70); overflow-y: auto; background: rgba(255,255,255,.96); border-radius: 12px; padding: 8px; box-shadow: 0 6px 24px rgba(0,0,0,.2); display: flex; flex-direction: column; gap: 3px; font-size: calc(12px * var(--fs)); }
 #devmenu b { margin: 6px 4px 2px; color: var(--muted); }
-#devmenu button { border: 0; background: none; text-align: left; padding: 6px 8px; border-radius: 8px; font-size: 13px; }
+#devmenu button { border: 0; background: none; text-align: left; padding: 6px 8px; border-radius: 8px; font-size: calc(13px * var(--fs)); }
 #devmenu button.on { background: var(--accent); color: var(--accent-ink); }
 #devmenu .gear { margin-top: 6px; border-top: 1px solid var(--panel-line); border-radius: 0; }
 
@@ -52,12 +52,12 @@ html { overflow-x: hidden; max-width: 100%; }
 .charopts .seg { background-image: var(--dither); }
 
 /* 버튼: 쿠킹마마 UI 사진을 참고해 가공 — 굵은 윤곽선 + 윗면 하이라이트 + 아랫면 두께, 조금 둥근 사각형, 조금 작게 */
-.btn { position: relative; border: 2px solid var(--ink); border-radius: 12px; padding: 6px 10px; font-size: 12.5px; font-weight: 600; line-height: 1.25;
+.btn { position: relative; border: 2px solid var(--ink); border-radius: 12px; padding: 6px 10px; font-size: calc(12.5px * var(--fs)); font-weight: 600; line-height: 1.25;
   background: var(--dither), linear-gradient(#ffffff, #f0e4e8);
   box-shadow: inset 0 2px 0 rgba(255,255,255,.95), inset 0 -3px 0 rgba(43,29,34,.1), 0 2px 0 var(--ink); }
 .btn.primary { background: var(--dither), linear-gradient(#5d4c55, #2b1d22); color: #fff; border-color: #170f12;
   box-shadow: inset 0 2px 0 rgba(255,255,255,.28), inset 0 -3px 0 rgba(0,0,0,.28), 0 2px 0 #000; }
-.btn.big { padding: 10px 10px; font-size: 14px; border-radius: 14px; }
+.btn.big { padding: 10px 10px; font-size: calc(14px * var(--fs)); border-radius: 14px; }
 .btn:active { transform: translateY(2px); box-shadow: inset 0 2px 0 rgba(255,255,255,.6), 0 0 0 var(--ink); }
 .btn.ghost { border-color: transparent; background: none; box-shadow: none; }
 .iconbtn { border: 2px solid var(--ink); background: var(--dither), linear-gradient(#fff, #f0e4e8); box-shadow: 0 2px 0 var(--ink); }
@@ -91,7 +91,7 @@ html { overflow-x: hidden; max-width: 100%; }
 .bubble, .sheet { z-index: 2; }
 
 /* 되돌리기(꽃 고르기): 왼쪽 가운데 아이콘 */
-.undo-float { position: absolute; left: 10px; top: 46%; z-index: 2; width: 38px; height: 38px; border-radius: 12px; padding: 0; font-size: 18px; }
+.undo-float { position: absolute; left: 10px; top: 46%; z-index: 2; width: 38px; height: 38px; border-radius: 12px; padding: 0; font-size: calc(18px * var(--fs)); }
 
 /* 접을 수 있는 아래 패널 */
 .sheet.collapsed { height: 34px !important; overflow: hidden; padding-top: 4px; padding-bottom: 0; }
@@ -112,7 +112,7 @@ html { overflow-x: hidden; max-width: 100%; }
 
 /* 마감일 화살표(S0-1) */
 .stepper { display: inline-flex; flex-direction: column; gap: 2px; }
-.stepper button { padding: 1px 12px; line-height: 1; font-size: 11px; }
+.stepper button { padding: 1px 12px; line-height: 1; font-size: calc(11px * var(--fs)); }
 
 /* 넓은 화면(컴퓨터)에서도 휴대폰과 같은 모습: 3D 무대도 UI와 같은 폭(최대 520px) 한 줄로 가운데에 둠 */
 #stage3d { left: 50%; right: auto; width: min(100%, 520px); transform: translateX(-50%); }
