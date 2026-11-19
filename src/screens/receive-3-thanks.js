@@ -15,7 +15,7 @@ export default {
     ctx.stage.show(charObj(state.character.look || DEFAULT_LOOK(), { items: DEMO_SINGLE, wrap: 'kraft' }), { ...CHAR_CAM, minDistance: 1.2 });
     L.addSheet([
       el('button', { class: 'btn big primary', style: { width: '100%' }, onclick: () => { setMode('single'); ctx.go('send-1-flowers'); } }, t('receive.thanks.single')),
-      el('button', { class: 'btn big', style: { width: '100%', marginTop: '8px' }, onclick: () => { if (!state.character.confirmed) ctx.go('send-3-character'); else toast(t('receive.thanks.snapSoon')); } }, t('receive.thanks.snap')),
+      el('button', { class: 'btn big', style: { width: '100%', marginTop: '8px' }, onclick: () => { state.character.confirmed ? ctx.go('receive-3-1-snap') : ctx.go('send-3-character'); } }, t('receive.thanks.snap')),
       el('button', { class: 'btn big', style: { width: '100%', marginTop: '8px' }, onclick: () => ctx.go('receive-4-box') }, t('receive.thanks.box'))], { grab: false });
     return () => L.dispose();
   },

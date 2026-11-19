@@ -12,5 +12,6 @@ import r11 from './receive-1-1-card.js';
 import r12 from './receive-1-2-parcel.js';
 import r2 from './receive-2-dome.js';
 import r3 from './receive-3-thanks.js';
+import r31 from './receive-3-1-snap.js';
 import r4 from './receive-4-box.js';
-export const screens = [intro, collect, flowers, card, gift, character, share, r0, r1, r11, r12, r2, r3, r4];
+export const screens = [intro, collect, flowers, card, gift, character, share, r0, r1, r11, r12, r2, r3, r31, r4];
